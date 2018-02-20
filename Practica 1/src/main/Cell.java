@@ -18,8 +18,8 @@ public class Cell {
 		cell.setBackground(new Color(255,255,204));
 	}
 	
-	public void mark() {
-		cell.setBackground(new Color(244,155,57));
+	public void mark(Color c) {
+		cell.setBackground(c);
 	}
 	
 	public int getX() {
@@ -34,4 +34,10 @@ public class Cell {
 		return cell;
 	}
 	
+	public void isBarrier() {
+		cell.setBackground(new java.awt.Color(0, 0, 0));
+		cell.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
+        cell.setForeground(new java.awt.Color(255, 0, 0));
+        cell.setText("XXXXXXX");
+	}
 }

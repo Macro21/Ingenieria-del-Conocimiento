@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -82,7 +83,7 @@ public class Board {
         rows.setForeground(new java.awt.Color(255, 102, 0));
         rows.setText("Rows");
 
-        start.setBackground(new java.awt.Color(255, 255, 255));
+        start.setBackground(new java.awt.Color(0, 0, 150));
         start.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
         start.setForeground(new java.awt.Color(0, 209, 0));
         start.setText("Start");
@@ -104,11 +105,11 @@ public class Board {
         yStart.setPreferredSize(new java.awt.Dimension(50, 50));
 
         lblStart.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        lblStart.setForeground(new java.awt.Color(255, 102, 0));
+        lblStart.setForeground(new java.awt.Color(102, 0, 0));
         lblStart.setText("Start");
 
         lblGoal.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        lblGoal.setForeground(new java.awt.Color(255, 102, 0));
+        lblGoal.setForeground(new java.awt.Color(0, 0, 158));
         lblGoal.setText("Goal");
 
         this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
@@ -234,7 +235,18 @@ public class Board {
         this.start.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				try {
+					int xS = Integer.parseInt(xStart.getText());
+					int yS = Integer.parseInt(yStart.getText());
+					int xG = Integer.parseInt(xGoal.getText());
+					int yG = Integer.parseInt(yGoal.getText());
+					markEspecialCell(xS,yS, new Color(102,0,0));
+					markEspecialCell(xG,yG, new Color(0,0,158));
+					
+				}
+				catch(NumberFormatException ex) {
+            		System.out.println("Error de parseo");
+            	}
 			}
         });
         
@@ -244,6 +256,7 @@ public class Board {
 				System.exit(0);		
 			}
 		});
+        
 
         this.pFrame.pack();
         this.pFrame.setVisible(true);
@@ -259,6 +272,13 @@ public class Board {
     	for(int i = 0; i<N_ROWS; i++) {
     		for(int j = 0; j<N_COLS;j++) {
 				Cell cell = new Cell(i,j);
+				JButton b = cell.getCell();
+				b.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						cell.isBarrier();
+					}
+				});
 				this.pMatrix.add(cell.getCell());
 				this.matrix[i][j] = cell;
     		}
@@ -267,7 +287,12 @@ public class Board {
     }
     
     public void markCell(int x, int y) {
-    	matrix[x][y].mark();
+    	this.matrix[x][y].mark(new Color(036,231,017));
+    	repaintMatrix();
+    }
+    
+    public void markEspecialCell(int x, int y, Color c) {
+    	this.matrix[x][y].mark(c);
     	repaintMatrix();
     }
     
