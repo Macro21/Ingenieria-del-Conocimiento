@@ -26,15 +26,18 @@ public class Board {
     private JButton start;
     private JButton exit;
     private JTextField xGoal;
-    private JTextField xStart;
+    private JTextField startXtxt;
     private JTextField yGoal;
-    private JTextField yStart;
+    private JTextField startYtxt;
     private JLabel lblStart;
     private JLabel lblGoal;
     private JButton genMatrix;
     
 	private int N_COLS = 6;
 	private int N_ROWS = 6;
+	
+	private int startX;
+	private int startY;
 	
 	private Cell matrix[][];
 	
@@ -55,13 +58,14 @@ public class Board {
         exit = new javax.swing.JButton();
         lblConfig = new javax.swing.JLabel();
         genMatrix = new javax.swing.JButton();
-        yStart = new javax.swing.JTextField();
-        xStart = new javax.swing.JTextField();
+        startYtxt = new javax.swing.JTextField();
+        startXtxt = new javax.swing.JTextField();
         yGoal = new javax.swing.JTextField();
         xGoal = new javax.swing.JTextField();
         lblStart = new javax.swing.JLabel();
         lblGoal = new javax.swing.JLabel();
         pMatrix = new javax.swing.JPanel();
+        
         this.pFrame = new JFrame();
         
         createMatrix();
@@ -102,7 +106,7 @@ public class Board {
         genMatrix.setForeground(new java.awt.Color(0, 0, 204));
         genMatrix.setText("New Matrix");
 
-        yStart.setPreferredSize(new java.awt.Dimension(50, 50));
+        startYtxt.setPreferredSize(new java.awt.Dimension(50, 50));
 
         lblStart.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
         lblStart.setForeground(new java.awt.Color(102, 0, 0));
@@ -134,9 +138,9 @@ public class Board {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                         .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                                .addComponent(xStart, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(startXtxt, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(yStart, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(startYtxt, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
                                 .addComponent(xGoal, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -184,8 +188,8 @@ public class Board {
                 .addComponent(genMatrix)
                 .addGap(18, 18, 18)
                 .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(yStart, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(xStart, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(startYtxt, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(startXtxt, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblStart))
                 .addGap(18, 18, 18)
                 .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -236,11 +240,11 @@ public class Board {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					int xS = Integer.parseInt(xStart.getText());
-					int yS = Integer.parseInt(yStart.getText());
+					startX = Integer.parseInt(startXtxt.getText());
+					startY = Integer.parseInt(startYtxt.getText());
 					int xG = Integer.parseInt(xGoal.getText());
 					int yG = Integer.parseInt(yGoal.getText());
-					markEspecialCell(xS,yS, new Color(102,0,0));
+					markEspecialCell(startX,startY, new Color(102,0,0));
 					markEspecialCell(xG,yG, new Color(0,0,158));
 					
 				}
@@ -306,4 +310,26 @@ public class Board {
     	}
     	this.pFrame.revalidate();
     }
+    
+    public Cell[][] getMatrix() {
+		return matrix;
+	}
+    
+    public int getRows() {
+		return N_ROWS;
+	}
+    
+    public int getCols() {
+		return N_COLS;
+	}
+    
+    public int getStartX() {
+		return this.startX;
+	}
+    
+    public int getStartY() {
+    	return this.startY;
+    }
+    
+    
 }

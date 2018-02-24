@@ -7,9 +7,8 @@ public class Main {
 		Board b = new Board();
 		b.markCell(3,3);
 		b.markCell(5, 5);
-		/*Star e = new Star();
-		Node n = new Node("A",3);
-		e.add(n);
-		e.read();*/
+	
+		Star e = new Star();
+		e.play(b.getMatrix(), b.getRows(),b.getCols(), b.getStartX(), b.getStartY());
 	}
 }
