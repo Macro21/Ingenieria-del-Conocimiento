@@ -1,4 +1,4 @@
-package main;
+package dataStructures;
 
 import java.awt.Color;
 
@@ -6,24 +6,27 @@ import javax.swing.JButton;
 
 public class Cell {
 	
-	private String name;
 	private JButton cell;
 	private int x;
 	private int y;
-	private String relPos;
 	private double g;
 	private double h;
 	private double f;
 	
+	public Cell() {
+		this.cell = new JButton();
+		this.cell.setBackground(new Color(255,255,204));
+	}
+	
 	public Cell(int x, int y) {
 		this.x = x;
 		this.y = y;
-		cell = new JButton();
-		cell.setBackground(new Color(255,255,204));
+		this.cell = new JButton();
+		this.cell.setBackground(new Color(255,255,204));
 	}
 	
 	public void mark(Color c) {
-		cell.setBackground(c);
+		this.cell.setBackground(c);
 	}
 	
 	public int getX() {
@@ -45,24 +48,8 @@ public class Cell {
         cell.setText("X");
 	}
 	
-	public String getName() {
-		return name;
-	}
-	
 	public void setCell(JButton cell) {
 		this.cell = cell;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public String getRelPos() {
-		return relPos;
-	}
-	
-	public void setRelPos(String relPos) {
-		this.relPos = relPos;
 	}
 	
 	public double getG() {
@@ -87,5 +74,25 @@ public class Cell {
 	
 	public void setF(double f) {
 		this.f = f;
+	}
+	
+	public void setX(int x) {
+		this.x = x;
+	}
+	
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public int compareTo(Cell c2) {
+		if(this.h < c2.getH()) {
+			return -1;
+		}
+		else if (this.h == c2.getH()) {
+			if(this.f < c2.getF()) {
+				return -1;
+			}
+		}
+		return 1;
 	}
 }

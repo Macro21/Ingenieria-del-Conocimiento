@@ -1,16 +1,19 @@
-package main;
+package aStar;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import dataStructures.Cell;
 
 public class Board {
 	
@@ -38,12 +41,14 @@ public class Board {
 	
 	private int startX;
 	private int startY;
+	private int goalX;
+	private int goalY;
 	
 	private Cell matrix[][];
 	
 	
 	public Board() {
-		matrix = new Cell[N_ROWS][N_COLS];
+		matrix = new Cell[N_ROWS+1][N_COLS+1];
 		initComponents();	
 	}
  
@@ -226,8 +231,8 @@ public class Board {
         this.genMatrix.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
             	try {
-            		N_COLS = Integer.parseInt(nCols.getText());
-            		N_ROWS = Integer.parseInt(nRows.getText());		
+            		N_COLS = Integer.parseInt(nCols.getText()) + 1;
+            		N_ROWS = Integer.parseInt(nRows.getText()) + 1;		
             		createMatrix();
             	}
             	catch(NumberFormatException e) {
@@ -235,24 +240,7 @@ public class Board {
             	}
             }
         });
-        
-        this.start.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					startX = Integer.parseInt(startXtxt.getText());
-					startY = Integer.parseInt(startYtxt.getText());
-					int xG = Integer.parseInt(xGoal.getText());
-					int yG = Integer.parseInt(yGoal.getText());
-					markEspecialCell(startX,startY, new Color(102,0,0));
-					markEspecialCell(xG,yG, new Color(0,0,158));
-					
-				}
-				catch(NumberFormatException ex) {
-            		System.out.println("Error de parseo");
-            	}
-			}
-        });
+       
         
         this.exit.addActionListener(new ActionListener() {
 			@Override
@@ -266,15 +254,17 @@ public class Board {
         this.pFrame.setVisible(true);
     }
     
+
+    
     /*
      * Borra el panel de la matriz y la pinta de nuevo
      * */
     private void createMatrix(){
     	this.pMatrix.removeAll();
     	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
-    	matrix = new Cell[N_ROWS][N_COLS];
-    	for(int i = 0; i<N_ROWS; i++) {
-    		for(int j = 0; j<N_COLS;j++) {
+    	matrix = new Cell[N_ROWS+1][N_COLS+1];
+    	for(int i = 1; i<=N_ROWS; i++) {
+    		for(int j = 1; j<=N_COLS;j++) {
 				Cell cell = new Cell(i,j);
 				JButton b = cell.getCell();
 				b.addActionListener(new ActionListener() {
@@ -295,21 +285,40 @@ public class Board {
     	repaintMatrix();
     }
     
-    public void markEspecialCell(int x, int y, Color c) {
+    public void markSpecialCell(int x, int y, Color c) {
     	this.matrix[x][y].mark(c);
     	repaintMatrix();
     }
     
-    private void repaintMatrix(){
+    public void repaintMatrix(){
     	this.pMatrix.removeAll();
     	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
-    	for(int i = 0; i<N_ROWS; i++) {
-    		for(int j = 0; j<N_COLS;j++) {
+    	for(int i = 1; i<=N_ROWS; i++) {
+    		for(int j = 1; j<=N_COLS;j++) {
 				this.pMatrix.add(this.matrix[i][j].getCell()); 
     		}
     	}
+    	this.pMatrix.repaint();
     	this.pFrame.revalidate();
     }
+    
+	public void pathPaint(ArrayList<Cell> path) {
+		for(int i = 0; i<path.size(); i++) {
+			Cell c = path.get(i);
+			int x = c.getX();
+			int y = c.getY();
+			if(x == startX && y == startY) {
+				markSpecialCell(startX, startY, new Color(0,0,153));
+				
+			}
+			else if (x == goalX && y == goalY) {
+				markSpecialCell(goalX, goalY, new Color(128,255,0));
+			}
+			else {
+				markSpecialCell(c.getX(),c.getY(), new Color(102,0,0));
+			}
+		}
+	}
     
     public Cell[][] getMatrix() {
 		return matrix;
@@ -323,13 +332,54 @@ public class Board {
 		return N_COLS;
 	}
     
-    public int getStartX() {
-		return this.startX;
+    public JButton getStart() {
+		return start;
 	}
     
-    public int getStartY() {
-    	return this.startY;
-    }
+    public JTextField getStartXtxt() {
+		return startXtxt;
+	}
+    
+    public JTextField getStartYtxt() {
+		return startYtxt;
+	}
+    
+    public int getN_COLS() {
+		return N_COLS;
+	}
+    
+    public int getN_ROWS() {
+		return N_ROWS;
+	}
+    
+    public JTextField getxGoal() {
+		return xGoal;
+	}
+    
+    public JTextField getyGoal() {
+		return yGoal;
+	}
+
+	public void setXs(int startX) {
+		this.startX = startX;
+	}
+
+	public void setYs(int startY) {
+		this.startY = startY;
+	}
+
+	public void setXg(int goalX) {
+		this.goalX = goalX;
+	}
+
+	public void setYg(int goalY) {
+		this.goalY = goalY;
+	}
+
+	public void repaintDefaultMatrix() {
+		createMatrix();
+	}
+    
     
     
 }
