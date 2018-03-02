@@ -75,7 +75,7 @@ public class Board {
         
         createMatrix();
         
-        this.pFrame.setTitle("Algorithm A*");
+        this.pFrame.setTitle("Algorithm A* - Andrei Ionut Vaduva");
         this.pFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         this.pFrame.setBackground(new java.awt.Color(255, 255, 204));
         pMatrix.setPreferredSize(new Dimension(700, 600));
@@ -114,11 +114,11 @@ public class Board {
         startYtxt.setPreferredSize(new java.awt.Dimension(50, 50));
 
         lblStart.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        lblStart.setForeground(new java.awt.Color(102, 0, 0));
+        lblStart.setForeground(new java.awt.Color(0, 0, 158));
         lblStart.setText("Start");
 
         lblGoal.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        lblGoal.setForeground(new java.awt.Color(0, 0, 158));
+        lblGoal.setForeground(new Color(128,255,0));
         lblGoal.setText("Goal");
 
         this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
@@ -231,8 +231,8 @@ public class Board {
         this.genMatrix.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
             	try {
-            		N_COLS = Integer.parseInt(nCols.getText()) + 1;
-            		N_ROWS = Integer.parseInt(nRows.getText()) + 1;		
+            		N_COLS = Integer.parseInt(nCols.getText());
+            		N_ROWS = Integer.parseInt(nRows.getText());		
             		createMatrix();
             	}
             	catch(NumberFormatException e) {
@@ -245,12 +245,13 @@ public class Board {
         this.exit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				pFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				System.exit(0);		
 			}
 		});
-        
 
         this.pFrame.pack();
+        this.pFrame.setLocationRelativeTo(null);
         this.pFrame.setVisible(true);
     }
     
@@ -277,6 +278,7 @@ public class Board {
 				this.matrix[i][j] = cell;
     		}
     	}
+    	this.pFrame.setPreferredSize(new Dimension(700+(N_ROWS*15), 600+(N_COLS*15)));
     	this.pFrame.revalidate();
     }
     
@@ -377,9 +379,28 @@ public class Board {
 	}
 
 	public void repaintDefaultMatrix() {
-		createMatrix();
+		this.pMatrix.removeAll();
+    	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
+    	matrix = new Cell[N_ROWS+1][N_COLS+1];
+    	for(int i = 1; i<=N_ROWS; i++) {
+    		for(int j = 1; j<=N_COLS;j++) {
+				Cell cell = new Cell(i,j);
+				JButton b = cell.getCell();
+				b.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						cell.isBarrier();
+					}
+				});
+				this.pMatrix.add(cell.getCell());
+				this.matrix[i][j] = cell;
+    		}
+    	}
+    	this.pFrame.revalidate();
 	}
     
-    
+    public JFrame getpFrame() {
+		return pFrame;
+	}
     
 }

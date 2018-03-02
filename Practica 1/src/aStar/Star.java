@@ -149,7 +149,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x+1,y+1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x+1][y+1] = c;
 				}
 			}
 		}
@@ -173,7 +173,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x+1,y-1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x+1][y-1] = c;
 				}	
 			}
 		}
@@ -198,7 +198,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x,y+1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x][y+1] = c;
 				}	
 			}
 		}
@@ -212,7 +212,7 @@ public class Star {
 			c.setG(mg + g + 1);
 		
 			double a = (x - goalX);
-			double b = (y - (y+1));
+			double b = ((y-1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
 			c.setH(stim);
 			c.setF(c.getG() + stim);
@@ -225,7 +225,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x,y-1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x][y-1] = c;
 				}
 			}
 		}
@@ -250,7 +250,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x-1,y);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x-1][y] = c;
 				}	
 			}
 		}
@@ -276,7 +276,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x-1,y+1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x-1][y+1] = c;
 				}	
 			}
 		}
@@ -300,7 +300,7 @@ public class Star {
 				Data d2 = existsCell(this.close, x-1,y-1);
 				if(!d2.isFound()) {
 					add(c);
-					matrix[x+1][y] = c;
+					matrix[x-1][y-1] = c;
 				}
 			}
 		}
@@ -334,19 +334,18 @@ public class Star {
 			board.setYs(startY);
 			board.setXg(goalX);
 			board.setYg(goalY);
-			if(startX>N || startY >M || goalX> N || goalY>M) {
+			N = board.getN_ROWS();
+			M = board.getN_COLS();
+			
+			if(startX > N || startY > M || goalX > N || goalY > M) {
 				throw new Exception("Error, fuera de rango");
 			}
-			/*startX = 1;
-			startY = 1;
-			goalX = 3;
-			goalY = 3;*/
+			
 			matrix = board.getMatrix();
 			board.repaintDefaultMatrix();
 			this.close.clear();
 			this.open.clear();
-			N = board.getN_ROWS();
-			M = board.getN_COLS();
+			
 		}
 		catch(NumberFormatException e) {
 			throw new NumberFormatException();

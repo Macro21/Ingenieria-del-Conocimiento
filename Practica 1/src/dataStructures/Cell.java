@@ -42,10 +42,14 @@ public class Cell {
 	}
 	
 	public void isBarrier() {
-		cell.setBackground(new java.awt.Color(0, 0, 0));
-		cell.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        cell.setForeground(new java.awt.Color(255, 0, 0));
-        cell.setText("X");
+		this.cell.setBackground(new java.awt.Color(0, 0, 0));
+		this.cell.setFont(new java.awt.Font("Verdana", 0, 16)); 
+		this.cell.setForeground(new java.awt.Color(255, 0, 0));
+		this.cell.setText("X");
+	}
+	
+	public void isNormal() {
+		this.cell.setBackground(new Color(255,255,204));
 	}
 	
 	public void setCell(JButton cell) {
