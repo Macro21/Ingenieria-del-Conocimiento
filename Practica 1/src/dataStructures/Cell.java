@@ -48,10 +48,6 @@ public class Cell {
 		this.cell.setText("X");
 	}
 	
-	public void isNormal() {
-		this.cell.setBackground(new Color(255,255,204));
-	}
-	
 	public void setCell(JButton cell) {
 		this.cell = cell;
 	}
@@ -98,5 +94,9 @@ public class Cell {
 			}
 		}
 		return 1;
+	}
+
+	public void setDefaultColor() {
+		this.cell.setBackground(new Color(255,255,204));
 	}
 }

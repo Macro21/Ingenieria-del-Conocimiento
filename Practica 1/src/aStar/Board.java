@@ -268,17 +268,21 @@ public class Board {
     		for(int j = 1; j<=N_COLS;j++) {
 				Cell cell = new Cell(i,j);
 				JButton b = cell.getCell();
+				if(b.getText().equals("")) {
+					cell.setDefaultColor();
+				}
 				b.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						cell.isBarrier();
 					}
 				});
-				this.pMatrix.add(cell.getCell());
+				this.pMatrix.add(b);
 				this.matrix[i][j] = cell;
     		}
     	}
-    	this.pFrame.setPreferredSize(new Dimension(700+(N_ROWS*15), 600+(N_COLS*15)));
+    	this.pMatrix.setPreferredSize(new Dimension(700+(N_ROWS*20), 600+(N_COLS*15)));
+    	this.pFrame.setPreferredSize(this.pMatrix.getPreferredSize());
     	this.pFrame.revalidate();
     }
     
@@ -318,6 +322,18 @@ public class Board {
 			}
 			else {
 				markSpecialCell(c.getX(),c.getY(), new Color(102,0,0));
+			}
+		}
+	}
+	
+	public void repaintDefaultMatrix(Cell matrix[][]) {
+		createMatrix();	
+		for(int i = 1; i<= N_ROWS; i++) {
+			for(int j = 1; j <= N_COLS; j++) {
+				Cell c = matrix[i][j];
+				if(!c.getCell().getText().equals("")) {
+					this.matrix[i][j].isBarrier();
+				}
 			}
 		}
 	}
@@ -376,27 +392,6 @@ public class Board {
 
 	public void setYg(int goalY) {
 		this.goalY = goalY;
-	}
-
-	public void repaintDefaultMatrix() {
-		this.pMatrix.removeAll();
-    	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
-    	matrix = new Cell[N_ROWS+1][N_COLS+1];
-    	for(int i = 1; i<=N_ROWS; i++) {
-    		for(int j = 1; j<=N_COLS;j++) {
-				Cell cell = new Cell(i,j);
-				JButton b = cell.getCell();
-				b.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						cell.isBarrier();
-					}
-				});
-				this.pMatrix.add(cell.getCell());
-				this.matrix[i][j] = cell;
-    		}
-    	}
-    	this.pFrame.revalidate();
 	}
     
     public JFrame getpFrame() {

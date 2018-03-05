@@ -337,12 +337,15 @@ public class Star {
 			N = board.getN_ROWS();
 			M = board.getN_COLS();
 			
-			if(startX > N || startY > M || goalX > N || goalY > M) {
-				throw new Exception("Error, fuera de rango");
-			}
+			if(startX > N || startY > M || goalX > N || goalY > M)
+				throw new Exception("Error, fuera de rango!");
 			
 			matrix = board.getMatrix();
-			board.repaintDefaultMatrix();
+			if(!matrix[startX][startY].getCell().getText().equals(""))
+				throw new Exception("Error, inicio en obstaculo!");
+			if(!matrix[goalX][goalY].getCell().getText().equals(""))
+				throw new Exception("Error, fin en obstaculo!");
+			board.repaintDefaultMatrix(matrix);
 			this.close.clear();
 			this.open.clear();
 			
