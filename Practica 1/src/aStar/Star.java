@@ -103,28 +103,30 @@ public class Star {
 		double mg = m.getG();
 		boolean hijoMejor = false;
 		//down
-		if(x+1 <= N && matrix[x+1][y].getCell().getText().equals("")) {	
-			Cell c = new Cell();
-			c.setX(x+1);
-			c.setY(y);
-			c.setCell(matrix[x+1][y].getCell());
-			double g = matrix[x+1][y].getG();
-			c.setG(mg + g + 1);
-			
-			double a = ((x+1)-goalX);
-			double b = (y-goalY);
-			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b,2)));
-			c.setH(stim);//stim es la distancia estimada desde este hijo al objetivo
-			c.setF(c.getG() + stim);
-			Data d = existsCell(this.open, x+1, y);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//si encuentro en abierta a un hijo nuevo
-				hijoMejor=true;//borro al padre de cerrada y meto al hijo en cerrada y lo quito de abierta
-			}
-			else {				
-				Data d2 = existsCell(this.close, x+1,y);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x+1][y] = c;
+		if(x+1 <= N) {
+			if(matrix[x+1][y].getCell().getText().equals("")) {
+				Cell c = new Cell();
+				c.setX(x+1);
+				c.setY(y);
+				c.setCell(matrix[x+1][y].getCell());
+				double g = matrix[x+1][y].getG();
+				c.setG(mg + g + 1);
+				
+				double a = ((x+1)-goalX);
+				double b = (y-goalY);
+				double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b,2)));
+				c.setH(stim);//stim es la distancia estimada desde este hijo al objetivo
+				c.setF(c.getG() + stim);
+				Data d = existsCell(this.open, x+1, y);
+				if(d.isFound() && d.getCell().getH() < c.getH()) {//si encuentro en abierta a un hijo nuevo
+					hijoMejor=true;//borro al padre de cerrada y meto al hijo en cerrada y lo quito de abierta
+				}
+				else {			
+					Data d2 = existsCell(this.close, x+1,y);
+					if(!d2.isFound()) {
+						add(c);
+						matrix[x+1][y] = c;
+					}
 				}
 			}
 		}
