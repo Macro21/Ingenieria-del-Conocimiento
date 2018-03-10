@@ -12,10 +12,13 @@ public class Cell {
 	private double g;
 	private double h;
 	private double f;
+	private Cell father;
+	private boolean isBarrier;
 	
 	public Cell() {
 		this.cell = new JButton();
 		this.cell.setBackground(new Color(255,255,204));
+		isBarrier = false;
 	}
 	
 	public Cell(int x, int y) {
@@ -23,6 +26,7 @@ public class Cell {
 		this.y = y;
 		this.cell = new JButton();
 		this.cell.setBackground(new Color(255,255,204));
+		isBarrier = false;
 	}
 	
 	public void mark(Color c) {
@@ -41,15 +45,11 @@ public class Cell {
 		return cell;
 	}
 	
-	public void isBarrier() {
+	public void setBarrier() {
 		this.cell.setBackground(new java.awt.Color(0, 0, 0));
-		this.cell.setFont(new java.awt.Font("Verdana", 0, 16)); 
-		this.cell.setForeground(new java.awt.Color(255, 0, 0));
-		this.cell.setText("X");
-	}
-	
-	public void setCell(JButton cell) {
-		this.cell = cell;
+		isBarrier = true;
+		//this.cell.setFont(new java.awt.Font("Verdana", 0, 16)); 
+		//this.cell.setForeground(new java.awt.Color(255, 0, 0));
 	}
 	
 	public double getG() {
@@ -98,5 +98,27 @@ public class Cell {
 
 	public void setDefaultColor() {
 		this.cell.setBackground(new Color(255,255,204));
+	}
+	
+	public void setFather(Cell father) {
+		this.father = father;
+	}
+	
+	public Cell getFather() {
+		return this.father;
+	}
+	
+	public boolean isBarrier() {
+		return this.isBarrier;
+	}
+
+	public void setStart() {
+		// TODO Auto-generated method stub
+		this.cell.setBackground(new Color(0,0,153));
+	}
+
+	public void setGoal() {
+		// TODO Auto-generated method stub
+		this.cell.setBackground(new Color(128,255,0));
 	}
 }

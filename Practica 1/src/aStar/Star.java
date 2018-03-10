@@ -53,10 +53,8 @@ public class Star {
 		});
 	}
 
-	
-	public ArrayList<Cell> play() {
+	public void play() {
 		boolean fail = false;
-		boolean hijoMejor = false;
 		//Celda de inicio
 		Cell c = matrix[startX][startY];
 		if(c.getCell().getText().equals("")) {// Si no es un obstaculo
@@ -66,9 +64,9 @@ public class Star {
 			c.setH(stim);
 			c.setG(0);
 			c.setF(stim);
+			c.setFather(null);
 			add(c);
 		}
-		//3 3 es el fin
 		while(!fail) {
 			//Si hay en abierta hay elems meto el primero en cerrada y lo borro
 			if(this.open.size() > 0 ) {
@@ -82,162 +80,188 @@ public class Star {
 			//Si en cerrada es meta se acaba el proceso
 			if(this.close.get(this.close.size()-1).getX() == goalX && this.close.get(this.close.size()-1).getY() == goalY) {
 				fail = true;
-				hijoMejor = false;
 			}
 			//Si no es meta en cerrada se meten sus hijos
 			else {
-				if(hijoMejor) {
-					this.close.remove(this.close.size()-1);
-				}
 				Cell a = this.close.get(this.close.size()-1);
-				hijoMejor = getChildrens(a.getX(), a.getY());
+				getChildrens(a.getX(), a.getY());	
 			}
 		}
-		return close;
 	}
 
 	//Mete en abierta todos los nodos hijos de la casilla x y
-	private boolean getChildrens(int x, int y) {
+	private void getChildrens(int x, int y) {
 		Cell m = matrix[x][y];
 		double sTwo = Math.sqrt(2);
 		double mg = m.getG();
-		boolean hijoMejor = false;
+
 		//down
-		if(x+1 <= N) {
-			if(matrix[x+1][y].getCell().getText().equals("")) {
-				Cell c = new Cell();
-				c.setX(x+1);
-				c.setY(y);
-				c.setCell(matrix[x+1][y].getCell());
-				double g = matrix[x+1][y].getG();
-				c.setG(mg + g + 1);
-				
-				double a = ((x+1)-goalX);
-				double b = (y-goalY);
-				double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b,2)));
-				c.setH(stim);//stim es la distancia estimada desde este hijo al objetivo
-				c.setF(c.getG() + stim);
-				Data d = existsCell(this.open, x+1, y);
-				if(d.isFound() && d.getCell().getH() < c.getH()) {//si encuentro en abierta a un hijo nuevo
-					hijoMejor=true;//borro al padre de cerrada y meto al hijo en cerrada y lo quito de abierta
-				}
-				else {			
-					Data d2 = existsCell(this.close, x+1,y);
-					if(!d2.isFound()) {
-						add(c);
-						matrix[x+1][y] = c;
-					}
-				}
+		if(x+1 <= N && !matrix[x+1][y].isBarrier()) {
+			Cell c = new Cell();
+			c.setX(x+1);
+			c.setY(y);
+			c.setG(mg + 1);
+			
+			double a = ((x+1)-goalX);
+			double b = (y-goalY);
+			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b,2)));
+			
+			c.setH(stim);//stim es la distancia estimada desde este hijo al objetivo
+			c.setF(c.getG() + stim);	
+			
+			//si no tenia padre, le pongo padre
+			if(matrix[x+1][y].getFather() == null) {
+				c.setFather(m);
+			}
+			Data d = existsCell(this.open, x+1, y);
+			Data d2 = existsCell(this.close, x+1, y);
+
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x+1][y] = c;
+			}
+			
+			else if (d.isFound() && d.getCell().getG() >= c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + 1);
 			}
 		}
 		//down right
-		if(x+1 <= N && y+1 <= M && matrix[x+1][y+1].getCell().getText().equals("")) {
+		if(x+1 <= N && y+1 <= M && !matrix[x+1][y+1].isBarrier()) {
+			
 			Cell c = new Cell();
 			c.setX(x+1);
 			c.setY(y+1);
-			double g = matrix[x+1][y+1].getG();
-			c.setG(mg + g + sTwo);
-	
+			c.setG(mg + sTwo);
+			
 			double a = ((x+1) - goalX);
 			double b = ((y+1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
+			
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x+1, y+1);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x+1, y+1);
+			
+			if(matrix[x+1][y+1].getFather() == null) {
+				c.setFather(m);				
 			}
-			else {				
-				Data d2 = existsCell(this.close, x+1,y+1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x+1][y+1] = c;
-				}
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x+1][y+1] = c;
+			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + sTwo);
 			}
 		}
 		//down left
-		if(x+1 <= N && y-1 > 0 && matrix[x+1][y-1].getCell().getText().equals("")) {	
+		if(x+1 <= N && y-1 > 0 && !matrix[x+1][y-1].isBarrier()) {	
+	
 			Cell c = new Cell();
 			c.setX(x+1);
 			c.setY(y-1);
-			double g = matrix[x+1][y-1].getG();
-			c.setG(mg + g + sTwo);
+			c.setG(mg + sTwo);
+			
 			double a = ((x+1) - goalX);
 			double b = ((y-1) - goalY);
 			double stim = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+			
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x+1, y-1);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x+1, y-1);
+			
+			if(matrix[x+1][y-1].getFather() == null) {
+				c.setFather(m);
+			
 			}
-			else {				
-				Data d2 = existsCell(this.close, x+1,y-1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x+1][y-1] = c;
-				}	
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x+1][y-1] = c;
 			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + sTwo);
+			}
+	
 		}
 		//right
-		if(y+1 <= M && matrix[x][y+1].getCell().getText().equals("")) {
+		if(y+1 <= M && !matrix[x][y+1].isBarrier()) {
 			Cell c = new Cell();
 			c.setX(x);
 			c.setY(y+1);
-			double g = matrix[x][y+1].getG();
+			c.setG(mg + 1);
 			
-			c.setG(mg + g + 1);
 			double a = (x - goalX);
 			double b = ((y+1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
+			
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x, y+1);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x, y+1);
+			
+			if(matrix[x][y+1].getFather() == null) {
+				c.setFather(m);
 			}
-			else {	
-				Data d2 = existsCell(this.close, x,y+1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x][y+1] = c;
-				}	
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x][y+1] = c;
 			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + 1);
+			}	
+			
 		}
 		//left
-		if(y-1 >0 && matrix[x][y-1].getCell().getText().equals("")) {
-			
+		if(y-1 >0 && !matrix[x][y-1].isBarrier()) {
+		
 			Cell c = new Cell();
 			c.setX(x);
 			c.setY(y-1);
-			double g = matrix[x][y-1].getG();
-			c.setG(mg + g + 1);
-		
+			c.setG(mg +1);
+			
 			double a = (x - goalX);
 			double b = ((y-1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
+			
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x, y-1);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x, y-1);
+			
+			if(matrix[x][y-1].getFather() == null) {
+				c.setFather(m);
 			}
-			else {
-				
-				Data d2 = existsCell(this.close, x,y-1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x][y-1] = c;
-				}
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x][y-1] = c;
+			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + 1);
 			}
 		}
 		//up
-		if(x-1 >0 && matrix[x-1][y].getCell().getText().equals("")) {
+		if(x-1 >0 && !matrix[x-1][y].isBarrier()) {
 			Cell c = new Cell();
 			c.setX(x-1);
 			c.setY(y);
-			double g = matrix[x-1][y].getG();
-			c.setG(mg + g + 1);
+			c.setG(mg + 1);
 			
 			double a = ((x-1) - goalX);
 			double b = (y - goalY);
@@ -245,85 +269,97 @@ public class Star {
 			c.setH(stim);
 			c.setF(c.getG() + stim);
 			Data d = existsCell(this.open, x-1, y);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x-1, y);
+			
+			if(matrix[x-1][y].getFather() == null) {
+				c.setFather(m);
 			}
-			else {	
-				Data d2 = existsCell(this.close, x-1,y);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x-1][y] = c;
-				}	
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x-1][y] = c;
+			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + 1);
 			}
 		}
 		//up right
-		if(x-1 >0 && y+1 <= M && matrix[x-1][y+1].getCell().getText().equals("")) {
+		if(x-1 >0 && y+1 <= M && !matrix[x-1][y+1].isBarrier()) {
 
 			Cell c = new Cell();
 			c.setX(x-1);
 			c.setY(y+1);
-			double g = matrix[x-1][y+1].getG();
-			c.setG(mg + g + sTwo);
+			c.setG(mg + sTwo);
 			
 			double a = ((x-1) - goalX);
 			double b = ((y+1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x-1, y+1);
-			if(d.isFound() && d.getCell().getH() < c.getH()){//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x-1, y+1);
+			
+			if(matrix[x-1][y+1].getFather() == null) {
+				c.setFather(m);
 			}
-			else {
-				Data d2 = existsCell(this.close, x-1,y+1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x-1][y+1] = c;
-				}	
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x-1][y+1] = c;
+			}
+			
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + sTwo);
 			}
 		}
 		//up left
-		if(x-1>0 && y-1>0 && matrix[x-1][y-1].getCell().getText().equals("")) {		
+		if(x-1>0 && y-1>0 && !matrix[x-1][y-1].isBarrier()) {		
 			Cell c = new Cell();
 			c.setX(x-1);
 			c.setY(y-1);
-			double g =  matrix[x-1][y-1].getG();
-			c.setG(mg + g + sTwo);
+			c.setG(mg + sTwo);
+			
 			double a = ((x-1) - goalX);
 			double b = ((y-1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
 			c.setH(stim);
 			c.setF(c.getG() + stim);
+			
 			Data d = existsCell(this.open, x-1, y-1);
-			if(d.isFound() && d.getCell().getH() < c.getH()) {//Si el nuevo nodo, es decir, c tiene un coste mejor que ini se actualiza, sino se descarta
-				hijoMejor=true;
+			Data d2 = existsCell(this.close, x-1, y-1);
+			
+			if(matrix[x-1][y-1].getFather() == null) {
+				c.setFather(m);
 			}
-			else {			
-				Data d2 = existsCell(this.close, x-1,y-1);
-				if(!d2.isFound()) {
-					add(c);
-					matrix[x-1][y-1] = c;
-				}
+			
+			if(!d.isFound() && !d2.isFound()) {
+				add(c);
+				matrix[x-1][y-1] = c;
 			}
+			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+				d.getCell().setFather(m);
+				d.getCell().setG(m.getG() + sTwo);
+			}	
 		}
-		return hijoMejor;
 	}
 	
 	private Data existsCell(ArrayList<Cell> list, int x, int y){
 		boolean ok = false;
 		Cell found = null;
-		int index = -1;
 		int i = 0;
 		while(i<list.size() && !ok) {
 			Cell aux = list.get(i);
 			if(aux.getX() == x && aux.getY()==y){
 				ok=true;
 				found = aux;
-				index = i;
 			}
 			i++;
 		}
-		return new Data(ok,found,index);
+		return new Data(ok,found);
 	}
 	
 	private void iniStar() throws Exception {
@@ -364,8 +400,11 @@ public class Star {
 				String err = "Los datos introducidos son incorrectos!";
 				try{
 					iniStar();
-					ArrayList<Cell> path = play();
+					play();
+					ArrayList<Cell> path = new ArrayList<Cell>();
+					getPath(close.get(close.size()-1), path);
 					board.pathPaint(path);
+					//board.pathPaint(posibleCamino);
 				}
 				catch(NumberFormatException ex) {
 					JOptionPane.showMessageDialog(new JFrame(),err,"Error, formato incorrecto",JOptionPane.ERROR_MESSAGE);
@@ -374,6 +413,32 @@ public class Star {
 					JOptionPane.showMessageDialog(new JFrame(),err,excep.getMessage(),JOptionPane.ERROR_MESSAGE);
 				}
 			}
+
+			
         });
+	}
+	
+	private void getPath(Cell c, ArrayList<Cell> path) {
+		if(c != null) {
+			path.add(c);
+			getPath(c.getFather(), path);
+		}
+	}
+	
+	public void ready2() {
+		String err = "Los datos introducidos son incorrectos!";
+		try{
+			play();
+			ArrayList<Cell> path = new ArrayList<Cell>();
+			getPath(close.get(close.size()-1), path);
+			board.pathPaint(path);
+			//board.pathPaint(posibleCamino);
+		}
+		catch(NumberFormatException ex) {
+			JOptionPane.showMessageDialog(new JFrame(),err,"Error, formato incorrecto",JOptionPane.ERROR_MESSAGE);
+		}
+		catch(Exception excep) {
+			JOptionPane.showMessageDialog(new JFrame(),err,excep.getMessage(),JOptionPane.ERROR_MESSAGE);
+		}
 	}
 }
