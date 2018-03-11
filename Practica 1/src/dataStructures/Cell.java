@@ -45,11 +45,9 @@ public class Cell {
 		return cell;
 	}
 	
-	public void setBarrier() {
-		this.cell.setBackground(new java.awt.Color(0, 0, 0));
+	public void setBarrier(Color c) {
+		this.cell.setBackground(c);
 		isBarrier = true;
-		//this.cell.setFont(new java.awt.Font("Verdana", 0, 16)); 
-		//this.cell.setForeground(new java.awt.Color(255, 0, 0));
 	}
 	
 	public double getG() {
@@ -96,8 +94,8 @@ public class Cell {
 		return 1;
 	}
 
-	public void setDefaultColor() {
-		this.cell.setBackground(new Color(255,255,204));
+	public void setDefaultColor(Color c) {
+		this.cell.setBackground(c);
 	}
 	
 	public void setFather(Cell father) {

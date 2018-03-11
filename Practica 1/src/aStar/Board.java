@@ -4,17 +4,20 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import dataStructures.Cell;
 
-public class Board {
+public class Board{
 	
     // Variables declaration - do not modify           
 	private JFrame pFrame;
@@ -34,9 +37,17 @@ public class Board {
     private JLabel startLbl;
     private JLabel goalLbl;
     private JButton genMatrix;
+    private JButton clear;
+    private JButton clearAll;
     
 	private int N_COLS = 20;
 	private int N_ROWS = 20;
+	
+	private final Color startCellColor = new Color(0,0,153);
+	private final Color goalCellColor = new Color(128,255,0);
+	private final Color barrierColor = new Color(0,0,0);
+	//private final Color defaultCellColor = new Color(255,255,204);
+	private final Color pathCellColor = new Color(102,0,0);
 	
 	private int startX;
 	private int startY;
@@ -53,211 +64,6 @@ public class Board {
 		initComponents();	
 	}
  
-   /* private void initComponents() {
-
-        pConfig = new javax.swing.JPanel();
-        nRows = new javax.swing.JTextField();
-        nCols = new javax.swing.JTextField();
-        cols = new javax.swing.JLabel();
-        rows = new javax.swing.JLabel();
-        start = new javax.swing.JButton();
-        exit = new javax.swing.JButton();
-        lblConfig = new javax.swing.JLabel();
-        genMatrix = new javax.swing.JButton();
-        txtStartY = new javax.swing.JTextField();
-        txtStartX = new javax.swing.JTextField();
-        txtGoalY = new javax.swing.JTextField();
-        txtGoalX = new javax.swing.JTextField();
-        startLbl = new javax.swing.JLabel();
-        goalLbl = new javax.swing.JLabel();
-        pMatrix = new javax.swing.JPanel();
-        
-        this.pFrame = new JFrame();
-        
-        createMatrix();
-        
-        this.pFrame.setTitle("Algorithm A* - Andrei Ionut Vaduva");
-        this.pFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        this.pFrame.setBackground(new java.awt.Color(255, 255, 204));
-        pMatrix.setPreferredSize(new Dimension(1170, 900));
-        this.pFrame.setPreferredSize(new Dimension(1450,1000));
-        pConfig.setBackground(new java.awt.Color(255, 255, 204));
-        pConfig.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black));
-   
-
-        cols.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        cols.setForeground(new java.awt.Color(255, 102, 0));
-        cols.setText("Columns");
-
-        rows.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        rows.setForeground(new java.awt.Color(255, 102, 0));
-        rows.setText("Rows");
-
-        start.setBackground(new java.awt.Color(0, 0, 150));
-        start.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        start.setForeground(new java.awt.Color(0, 209, 0));
-        start.setText("Start");
-
-        exit.setBackground(new java.awt.Color(255, 255, 255));
-        exit.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        exit.setForeground(new java.awt.Color(255, 0, 0));
-        exit.setText("Exit");
-
-        lblConfig.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        lblConfig.setForeground(new java.awt.Color(255, 102, 0));
-        lblConfig.setText("Configuration");
-
-        genMatrix.setBackground(new java.awt.Color(51, 255, 204));
-        genMatrix.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        genMatrix.setForeground(new java.awt.Color(0, 0, 204));
-        genMatrix.setText("New Matrix");
-
-        txtStartY.setPreferredSize(new java.awt.Dimension(50, 50));
-
-        startLbl.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        startLbl.setForeground(new java.awt.Color(0, 0, 158));
-        startLbl.setText("Start");
-
-        goalLbl.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        goalLbl.setForeground(new Color(128,255,0));
-        goalLbl.setText("Goal");
-
-        this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
-    	this.pMatrix.setVisible(true);
-        
-    	
-        javax.swing.GroupLayout pConfigLayout = new javax.swing.GroupLayout(pConfig);
-        pConfig.setLayout(pConfigLayout);
-        pConfigLayout.setHorizontalGroup(
-            pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pConfigLayout.createSequentialGroup()
-                .addGap(51, 51, 51)
-                .addComponent(lblConfig)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(pConfigLayout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pConfigLayout.createSequentialGroup()
-                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(goalLbl)
-                            .addComponent(startLbl))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
-                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                                .addComponent(txtStartX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtStartY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                                .addComponent(txtGoalX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtGoalY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(30, 30, 30))
-                    .addGroup(pConfigLayout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(pConfigLayout.createSequentialGroup()
-                                .addComponent(rows)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(nRows, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(pConfigLayout.createSequentialGroup()
-                                .addComponent(cols)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(nCols, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(21, 21, 21))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                        .addComponent(genMatrix)
-                        .addGap(59, 59, 59))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                        .addComponent(exit)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                        .addComponent(start)
-                        .addGap(83, 83, 83))))
-        );
-        pConfigLayout.setVerticalGroup(
-            pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pConfigLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
-                .addComponent(lblConfig)
-                .addGap(42, 42, 42)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(rows)
-                    .addComponent(nRows, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cols)
-                    .addComponent(nCols, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(genMatrix)
-                .addGap(18, 18, 18)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtStartY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtStartX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(startLbl))
-                .addGap(18, 18, 18)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtGoalY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtGoalX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(goalLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(start)
-                .addGap(40, 40, 40)
-                .addComponent(exit)
-                .addContainerGap())
-        );
-
-        pMatrix.setBackground(new java.awt.Color(255, 255, 204));
-        pMatrix.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black));
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this.pFrame.getContentPane());
-        this.pFrame.getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(pMatrix, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pConfig, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(49, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(pMatrix, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        
-        
-        this.genMatrix.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-            	try {
-            		N_COLS = Integer.parseInt(nCols.getText());
-            		N_ROWS = Integer.parseInt(nRows.getText());		
-            		createMatrix();
-            	}
-            	catch(NumberFormatException e) {
-            		System.out.println("Error de parseo");
-            	}
-            }
-        });
-       
-        
-        this.exit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				pFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				System.exit(0);		
-			}
-		});
-
-        this.pFrame.pack();
-        this.pFrame.setLocationRelativeTo(null);
-        this.pFrame.setVisible(true);
-    }*/
-    
-    
-    
     private void initComponents() {
 
         pMatrix = new javax.swing.JPanel();
@@ -276,13 +82,14 @@ public class Board {
         txtGoalX = new javax.swing.JTextField();
         startLbl = new javax.swing.JLabel();
         goalLbl = new javax.swing.JLabel();
-
-        this.pFrame = new JFrame();
-        
+        clear = new javax.swing.JButton();
+        clearAll = new javax.swing.JButton();
+ 	
+        this.pFrame = new JFrame(); 
         this.pFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         this.pFrame.setBackground(new java.awt.Color(0, 153, 153));
         this.pFrame.setMaximumSize(new java.awt.Dimension(1450, 1000));
-        this.pFrame.setPreferredSize(new java.awt.Dimension(1450, 1000));
+        this.pFrame.setPreferredSize(new java.awt.Dimension(1475, 1000));
         
         createMatrix();
         
@@ -297,7 +104,7 @@ public class Board {
         pMatrix.setBackground(new java.awt.Color(255, 255, 204));
         pMatrix.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black));
         pMatrix.setMaximumSize(new java.awt.Dimension(1170, 900));
-        pMatrix.setPreferredSize(new java.awt.Dimension(1170, 900));
+        pMatrix.setPreferredSize(new java.awt.Dimension(1170, 900));  
 
         javax.swing.GroupLayout pMatrixLayout = new javax.swing.GroupLayout(pMatrix);
         pMatrix.setLayout(pMatrixLayout);
@@ -313,6 +120,7 @@ public class Board {
         pConfig.setBackground(new java.awt.Color(255, 255, 204));
         pConfig.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black, java.awt.Color.black));
         pConfig.setMaximumSize(new java.awt.Dimension(260, 576));
+
 
         cols.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
         cols.setForeground(new java.awt.Color(255, 102, 0));
@@ -341,17 +149,31 @@ public class Board {
         genMatrix.setForeground(new java.awt.Color(0, 0, 204));
         genMatrix.setText("New Matrix");
 
+        txtStartY.setPreferredSize(new java.awt.Dimension(50, 50));
+        
+
         startLbl.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        startLbl.setForeground(new java.awt.Color(255, 102, 0));
+        startLbl.setForeground(new java.awt.Color(51, 0, 204));
         startLbl.setText("Start");
 
         goalLbl.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
-        goalLbl.setForeground(new java.awt.Color(255, 102, 0));
+        goalLbl.setForeground(new java.awt.Color(0, 255, 0));
         goalLbl.setText("Goal");
-        
-        this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
-    	this.pMatrix.setVisible(true);
 
+        clear.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
+        clear.setForeground(new java.awt.Color(51, 102, 255));
+        clear.setText("Clear");
+
+        clearAll.setFont(new java.awt.Font("Verdana", 0, 16)); // NOI18N
+        clearAll.setForeground(new java.awt.Color(255, 0, 51));
+        clearAll.setText("Clear All");
+        clearAll.setBackground(new java.awt.Color(255, 255, 255));
+        clear.setBackground(new java.awt.Color(255, 255, 255));
+
+
+        this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
+      	this.pMatrix.setVisible(true);
+        
         javax.swing.GroupLayout pConfigLayout = new javax.swing.GroupLayout(pConfig);
         pConfig.setLayout(pConfigLayout);
         pConfigLayout.setHorizontalGroup(
@@ -361,40 +183,43 @@ public class Board {
                 .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pConfigLayout.createSequentialGroup()
                         .addComponent(rows)
-                        .addGap(48, 187, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(pConfigLayout.createSequentialGroup()
-                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(goalLbl)
-                                .addComponent(startLbl))
-                            .addComponent(cols))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(nCols, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(pConfigLayout.createSequentialGroup()
-                                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(txtGoalX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtStartX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtStartY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtGoalY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(nRows, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(exit))
+                                    .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(goalLbl)
+                                        .addComponent(startLbl))
+                                    .addComponent(cols))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(nCols, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(pConfigLayout.createSequentialGroup()
+                                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(txtGoalX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtStartX, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(start))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(txtStartY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtGoalY, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(nRows, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(exit)))
+                            .addGroup(pConfigLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(clear)
+                                .addGap(24, 24, 24)
+                                .addComponent(clearAll)))
                         .addGap(30, 30, 30))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                        .addComponent(genMatrix)
-                        .addGap(67, 67, 67))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pConfigLayout.createSequentialGroup()
-                        .addComponent(start)
-                        .addGap(81, 81, 81))))
             .addGroup(pConfigLayout.createSequentialGroup()
                 .addGap(48, 48, 48)
                 .addComponent(lblConfig)
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(pConfigLayout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addComponent(genMatrix)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pConfigLayout.setVerticalGroup(
             pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -424,6 +249,10 @@ public class Board {
                 .addGap(35, 35, 35)
                 .addComponent(start)
                 .addGap(31, 31, 31)
+                .addGroup(pConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(clear)
+                    .addComponent(clearAll))
+                .addGap(55, 55, 55)
                 .addComponent(exit)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -434,7 +263,7 @@ public class Board {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(pMatrix, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(pConfig, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -443,6 +272,7 @@ public class Board {
             .addComponent(pMatrix, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
             .addComponent(pConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
+        
         
         this.genMatrix.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -456,8 +286,7 @@ public class Board {
             	}
             }
         });
-       
-        
+         
         this.exit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -465,17 +294,32 @@ public class Board {
 				System.exit(0);		
 			}
 		});
+        
+        clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				repaintMatrix();
+			} 
+        });
 
+        clearAll.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				createMatrix();
+			} 
+        });
         this.pFrame.pack();
         this.pFrame.setLocationRelativeTo(null);
         this.pFrame.setVisible(true);
-    
     }
     
     /*
      * Borra el panel de la matriz y la pinta de nuevo
      * */
     private void createMatrix(){
+    	nClicks = 0;
     	this.pMatrix.removeAll();
     	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
     	matrix = new Cell[N_ROWS+1][N_COLS+1];
@@ -483,9 +327,6 @@ public class Board {
     		for(int j = 1; j<=N_COLS;j++) {
 				Cell cell = new Cell(i,j);
 				JButton b = cell.getCell();
-				if(!cell.isBarrier()) {
-					cell.setDefaultColor();
-				}
 				b.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
@@ -495,7 +336,7 @@ public class Board {
 						else if (nClicks == 2)
 							setGoal(cell);
 						else
-							cell.isBarrier();
+							cell.setBarrier(barrierColor);
 					}
 
 					private void setGoal(Cell cell) {
@@ -503,7 +344,6 @@ public class Board {
 						goalX = cell.getX();
 						goalY = cell.getY();
 						cell.setGoal();
-						start.getActionListeners().notify();
 					}
 
 					private void setStart(Cell cell) {
@@ -524,28 +364,30 @@ public class Board {
     	
     }
     
+    
     public void markCell(int x, int y) {
-    	this.matrix[x][y].mark(new Color(036,231,017));
-    	repaintMatrix();
+    	//this.matrix[x][y].mark(new Color(036,231,017));
+    	this.pMatrix.getComponent(((x-1)*N_ROWS)+y-1).setBackground(new Color(036,231,017));
+    //	repaintMatrix();
     }
     
     public void markSpecialCell(int x, int y, Color c) {
-    	this.matrix[x][y].mark(c);
-    	repaintMatrix();
+    	this.pMatrix.getComponent(((x-1)*N_ROWS)+y-1).setBackground(c);
+   // 	repaintMatrix();
     }
     
-    public void repaintMatrix(){
-    	this.pMatrix.removeAll();
+  //  public void repaintMatrix(){
+    /*	this.pMatrix.removeAll();
     	this.pMatrix.setLayout(new GridLayout(this.N_ROWS, this.N_COLS));
     	for(int i = 1; i<=N_ROWS; i++) {
     		for(int j = 1; j<=N_COLS;j++) {
 				this.pMatrix.add(this.matrix[i][j].getCell()); 
     		}
-    	}
-    	this.pMatrix.revalidate();
-    	this.pFrame.revalidate();
+    	}*/
+    	//this.pMatrix.getComponent(20).setBackground(new Color(100,100,100));
 
-    }
+
+  //  }
     
 	public void pathPaint(ArrayList<Cell> path) {
 		for(int i = 0; i<path.size(); i++) {
@@ -553,87 +395,103 @@ public class Board {
 			int x = c.getX();
 			int y = c.getY();
 			if(x == startX && y == startY) {
-				markSpecialCell(startX, startY, new Color(0,0,153));
+				markSpecialCell(startX, startY, startCellColor);
 			}
 			else if (x == goalX && y == goalY) {
-				markSpecialCell(goalX, goalY, new Color(128,255,0));
+				markSpecialCell(goalX, goalY, goalCellColor);
 			}
 			else {
-				markSpecialCell(c.getX(),c.getY(), new Color(102,0,0));
+				markSpecialCell(x,y, pathCellColor);
 			}
 		}
 	}
 	
-	public void repaintDefaultMatrix(Cell matrix[][]) {
-		createMatrix();	
-		for(int i = 1; i<= N_ROWS; i++) {
+	public void repaintMatrix() {
+		nClicks = 0;
+		Cell[][] m = this.matrix;
+		createMatrix();
+		for(int i = 1; i <= N_ROWS; i++) {
 			for(int j = 1; j <= N_COLS; j++) {
-				Cell c = matrix[i][j];
-				if(c.isBarrier()) {
-					this.matrix[i][j].setBarrier();
+				if(m[i][j].isBarrier()) {
+					this.matrix[i][j].setBarrier(barrierColor);
 				}
+				/*Color c = this.pMatrix.getComponent(i).getBackground();
+				if(c != barrierColor) {
+					this.pMatrix.getComponent(i).setBackground(defaultCellColor);
+				}
+				else {
+				//	matrix[i][j].setBarrier(this.barrierColor);
+					this.pMatrix.getComponent(i).setBackground(barrierColor);
+				}*/
 			}
 		}
 	}
     
+	public void ready() {
+		
+		this.start.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String err = "Los datos introducidos son incorrectos!";
+				try{	
+					Star s = new Star(matrix);
+					if(startX == 0 || startY == 0 || goalX == 0 || goalY == 0) {
+						startX = Integer.parseInt(txtStartX.getText());
+						startY = Integer.parseInt(txtStartY.getText());
+						goalX = Integer.parseInt(txtGoalX.getText());
+						goalY = Integer.parseInt(txtGoalY.getText());
+					}
+					if(startX > N_ROWS || startY > N_COLS || goalX > N_ROWS || goalY > N_COLS)
+						throw new Exception("Error, fuera de rango!");
+					if(matrix[startX][startY].isBarrier())
+						throw new Exception("Error, inicio en obstaculo!");
+					if(matrix[goalX][goalY].isBarrier())
+						throw new Exception("Error, fin en obstaculo!");	
+					nClicks = 0;
+					s.play(startX,startY,goalX,goalY);
+					pathPaint(s.getPath());
+					MouseListener mouseListener= new MouseListener() {					
+				        @Override
+				        public void mouseReleased(MouseEvent e) {
+				        }
+				
+				        @Override
+				        public void mousePressed(MouseEvent e) {
+				        }
+				
+				        @Override
+				        public void mouseExited(MouseEvent e) {
+				        }
+				
+				        @Override
+				        public void mouseEntered(MouseEvent e) {
+				        }
+				
+				        @Override
+				        public void mouseClicked(MouseEvent e) {
+				            if(e.getButton() == MouseEvent.BUTTON3) {
+				            	repaintMatrix();
+				            }     // MouseEvent.BUTTON3 es el boton derecho
+					    }
+					};
+					
+					pFrame.addMouseListener(mouseListener);
+					
+				}
+				catch(NumberFormatException ex) {
+					JOptionPane.showMessageDialog(new JFrame(),err,"Error, formato incorrecto",JOptionPane.ERROR_MESSAGE);
+				}
+				catch(Exception excep) {
+					JOptionPane.showMessageDialog(new JFrame(),err,excep.getMessage(),JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}); 
+	}
+	
+	
+	
     public Cell[][] getMatrix() {
 		return matrix;
-	}
-    
-    public int getRows() {
-		return N_ROWS;
-	}
-    
-    public int getCols() {
-		return N_COLS;
-	}
-    
-    public JButton getStart() {
-		return start;
-	}
-    
-    public JTextField getStartXtxt() {
-		return txtStartX;
-	}
-    
-    public JTextField getStartYtxt() {
-		return txtStartY;
-	}
-    
-    public int getN_COLS() {
-		return N_COLS;
-	}
-    
-    public int getN_ROWS() {
-		return N_ROWS;
-	}
-    
-    public JTextField getxGoal() {
-		return txtGoalX;
-	}
-    
-    public JTextField getyGoal() {
-		return txtGoalY;
-	}
-
-	public void setXs(int startX) {
-		this.startX = startX;
-	}
-
-	public void setYs(int startY) {
-		this.startY = startY;
-	}
-
-	public void setXg(int goalX) {
-		this.goalX = goalX;
-	}
-
-	public void setYg(int goalY) {
-		this.goalY = goalY;
-	}
-    
-    public JFrame getpFrame() {
-		return pFrame;
 	}
     
 }

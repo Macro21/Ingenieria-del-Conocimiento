@@ -1,12 +1,7 @@
 package aStar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Comparator;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 import dataStructures.Cell;
 import dataStructures.Data;
@@ -24,19 +19,18 @@ public class Star {
 	
 	private ArrayList<Cell> open;
 	private ArrayList<Cell> close;
-	private Board board;
-	private int startX;
-	private int startY;
-	private int goalX;
-	private int goalY;
+	//private Board board;
+
 	private Cell matrix[][];
 	private int N;
 	private int M;
 	
-	public Star(Board board) {
+	public Star(Cell[][] matrix) {
 		this.open = new ArrayList<Cell>();
 		this.close = new ArrayList<Cell>();
-		this.board = board;
+		this.matrix = matrix;
+		N = matrix.length;
+		M = matrix[0].length;
 	}
 	
 	private void add(Cell c) {
@@ -53,11 +47,11 @@ public class Star {
 		});
 	}
 
-	public void play() {
+	public Cell[][] play(int startX, int startY, int goalX, int goalY) {
 		boolean fail = false;
 		//Celda de inicio
 		Cell c = matrix[startX][startY];
-		if(c.getCell().getText().equals("")) {// Si no es un obstaculo
+		if(!c.isBarrier()) {// Si no es un obstaculo
 			double a = (startX-goalX);
 			double b = (startY-goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b,2)));
@@ -84,19 +78,20 @@ public class Star {
 			//Si no es meta en cerrada se meten sus hijos
 			else {
 				Cell a = this.close.get(this.close.size()-1);
-				getChildrens(a.getX(), a.getY());	
+				getChildrens(a.getX(), a.getY(), goalX, goalY);	
 			}
 		}
+		return matrix;
 	}
 
 	//Mete en abierta todos los nodos hijos de la casilla x y
-	private void getChildrens(int x, int y) {
+	private void getChildrens(int x, int y, int goalX, int goalY) {
 		Cell m = matrix[x][y];
 		double sTwo = Math.sqrt(2);
 		double mg = m.getG();
 
 		//down
-		if(x+1 <= N && !matrix[x+1][y].isBarrier()) {
+		if(x+1 < N && !matrix[x+1][y].isBarrier()) {
 			Cell c = new Cell();
 			c.setX(x+1);
 			c.setY(y);
@@ -120,14 +115,14 @@ public class Star {
 				add(c);
 				matrix[x+1][y] = c;
 			}
-			
+
 			else if (d.isFound() && d.getCell().getG() >= c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + 1);
 			}
 		}
 		//down right
-		if(x+1 <= N && y+1 <= M && !matrix[x+1][y+1].isBarrier()) {
+		if(x+1 < N && y+1 < M && !matrix[x+1][y+1].isBarrier()) {
 			
 			Cell c = new Cell();
 			c.setX(x+1);
@@ -159,7 +154,7 @@ public class Star {
 			}
 		}
 		//down left
-		if(x+1 <= N && y-1 > 0 && !matrix[x+1][y-1].isBarrier()) {	
+		if(x+1 < N && y-1 > 0 && !matrix[x+1][y-1].isBarrier()) {	
 	
 			Cell c = new Cell();
 			c.setX(x+1);
@@ -193,7 +188,7 @@ public class Star {
 	
 		}
 		//right
-		if(y+1 <= M && !matrix[x][y+1].isBarrier()) {
+		if(y+1 < M && !matrix[x][y+1].isBarrier()) {
 			Cell c = new Cell();
 			c.setX(x);
 			c.setY(y+1);
@@ -286,7 +281,7 @@ public class Star {
 			}
 		}
 		//up right
-		if(x-1 >0 && y+1 <= M && !matrix[x-1][y+1].isBarrier()) {
+		if(x-1 >0 && y+1 < M && !matrix[x-1][y+1].isBarrier()) {
 
 			Cell c = new Cell();
 			c.setX(x-1);
@@ -362,60 +357,10 @@ public class Star {
 		return new Data(ok,found);
 	}
 	
-	private void iniStar() throws Exception {
-		try {
-			startX = Integer.parseInt(board.getStartXtxt().getText());
-			startY = Integer.parseInt(board.getStartYtxt().getText());
-			goalX = Integer.parseInt(board.getxGoal().getText());
-			goalY = Integer.parseInt(board.getyGoal().getText());
-			board.setXs(startX);
-			board.setYs(startY);
-			board.setXg(goalX);
-			board.setYg(goalY);
-			N = board.getN_ROWS();
-			M = board.getN_COLS();
-			
-			if(startX > N || startY > M || goalX > N || goalY > M)
-				throw new Exception("Error, fuera de rango!");
-			
-			matrix = board.getMatrix();
-			if(!matrix[startX][startY].getCell().getText().equals(""))
-				throw new Exception("Error, inicio en obstaculo!");
-			if(!matrix[goalX][goalY].getCell().getText().equals(""))
-				throw new Exception("Error, fin en obstaculo!");
-			board.repaintDefaultMatrix(matrix);
-			this.close.clear();
-			this.open.clear();
-			
-		}
-		catch(NumberFormatException e) {
-			throw new NumberFormatException();
-		}
-	}
-	
-	public void ready() {
-        this.board.getStart().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String err = "Los datos introducidos son incorrectos!";
-				try{
-					iniStar();
-					play();
-					ArrayList<Cell> path = new ArrayList<Cell>();
-					getPath(close.get(close.size()-1), path);
-					board.pathPaint(path);
-					//board.pathPaint(posibleCamino);
-				}
-				catch(NumberFormatException ex) {
-					JOptionPane.showMessageDialog(new JFrame(),err,"Error, formato incorrecto",JOptionPane.ERROR_MESSAGE);
-				}
-				catch(Exception excep) {
-					JOptionPane.showMessageDialog(new JFrame(),err,excep.getMessage(),JOptionPane.ERROR_MESSAGE);
-				}
-			}
-
-			
-        });
+	public ArrayList<Cell> getPath(){
+		ArrayList<Cell> path = new ArrayList<Cell>();
+		getPath(this.close.get(this.close.size()-1), path);
+		return path;
 	}
 	
 	private void getPath(Cell c, ArrayList<Cell> path) {
@@ -425,20 +370,4 @@ public class Star {
 		}
 	}
 	
-	public void ready2() {
-		String err = "Los datos introducidos son incorrectos!";
-		try{
-			play();
-			ArrayList<Cell> path = new ArrayList<Cell>();
-			getPath(close.get(close.size()-1), path);
-			board.pathPaint(path);
-			//board.pathPaint(posibleCamino);
-		}
-		catch(NumberFormatException ex) {
-			JOptionPane.showMessageDialog(new JFrame(),err,"Error, formato incorrecto",JOptionPane.ERROR_MESSAGE);
-		}
-		catch(Exception excep) {
-			JOptionPane.showMessageDialog(new JFrame(),err,excep.getMessage(),JOptionPane.ERROR_MESSAGE);
-		}
-	}
 }
