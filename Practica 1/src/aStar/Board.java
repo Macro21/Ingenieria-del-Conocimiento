@@ -434,6 +434,12 @@ public class Board{
 			public void actionPerformed(ActionEvent e) {
 				String err = "Los datos introducidos son incorrectos!";
 				try{	
+					/*startX = 3;
+					startY = 9;
+					goalX = 8;
+					goalY = 8;
+					for(int j = 1; j<=11; j++)
+						matrix[6][j].setBarrier(barrierColor);*/
 					Star s = new Star(matrix);
 					if(startX == 0 || startY == 0 || goalX == 0 || goalY == 0) {
 						startX = Integer.parseInt(txtStartX.getText());
@@ -446,7 +452,7 @@ public class Board{
 					if(matrix[startX][startY].isBarrier())
 						throw new Exception("Error, inicio en obstaculo!");
 					if(matrix[goalX][goalY].isBarrier())
-						throw new Exception("Error, fin en obstaculo!");	
+						throw new Exception("Error, fin en obstaculo!");
 					nClicks = 0;
 					s.play(startX,startY,goalX,goalY);
 					pathPaint(s.getPath());

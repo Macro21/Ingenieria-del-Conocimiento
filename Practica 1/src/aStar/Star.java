@@ -78,18 +78,18 @@ public class Star {
 			//Si no es meta en cerrada se meten sus hijos
 			else {
 				Cell a = this.close.get(this.close.size()-1);
-				getChildrens(a.getX(), a.getY(), goalX, goalY);	
+				getChildrens(a.getX(), a.getY(), goalX, goalY,startX,startY);	
 			}
 		}
 		return matrix;
 	}
 
 	//Mete en abierta todos los nodos hijos de la casilla x y
-	private void getChildrens(int x, int y, int goalX, int goalY) {
+	private void getChildrens(int x, int y, int goalX, int goalY, int startX, int startY) {
 		Cell m = matrix[x][y];
 		double sTwo = Math.sqrt(2);
 		double mg = m.getG();
-
+		
 		//down
 		if(x+1 < N && !matrix[x+1][y].isBarrier()) {
 			Cell c = new Cell();
@@ -103,9 +103,9 @@ public class Star {
 			
 			c.setH(stim);//stim es la distancia estimada desde este hijo al objetivo
 			c.setF(c.getG() + stim);	
-			
+			c.setFather(matrix[x+1][y].getFather());
 			//si no tenia padre, le pongo padre
-			if(matrix[x+1][y].getFather() == null) {
+			if(c.getFather() == null) {
 				c.setFather(m);
 			}
 			Data d = existsCell(this.open, x+1, y);
@@ -116,7 +116,7 @@ public class Star {
 				matrix[x+1][y] = c;
 			}
 
-			else if (d.isFound() && d.getCell().getG() >= c.getG()) {
+			else if (d.isFound() && d.getCell().getG() > c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + 1);
 			}
@@ -128,26 +128,24 @@ public class Star {
 			c.setX(x+1);
 			c.setY(y+1);
 			c.setG(mg + sTwo);
+			c.setFather(matrix[x+1][y+1].getFather());
 			
 			double a = ((x+1) - goalX);
 			double b = ((y+1) - goalY);
 			double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
 			
 			c.setH(stim);
-			c.setF(c.getG() + stim);
 			
 			Data d = existsCell(this.open, x+1, y+1);
 			Data d2 = existsCell(this.close, x+1, y+1);
-			
-			if(matrix[x+1][y+1].getFather() == null) {
+
+			if(c.getFather() == null) {
 				c.setFather(m);				
 			}
-			
 			if(!d.isFound() && !d2.isFound()) {
 				add(c);
 				matrix[x+1][y+1] = c;
 			}
-			
 			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + sTwo);
@@ -173,9 +171,7 @@ public class Star {
 			
 			if(matrix[x+1][y-1].getFather() == null) {
 				c.setFather(m);
-			
 			}
-			
 			if(!d.isFound() && !d2.isFound()) {
 				add(c);
 				matrix[x+1][y-1] = c;
@@ -193,6 +189,7 @@ public class Star {
 			c.setX(x);
 			c.setY(y+1);
 			c.setG(mg + 1);
+			c.setFather(matrix[x][y+1].getFather());
 			
 			double a = (x - goalX);
 			double b = ((y+1) - goalY);
@@ -204,15 +201,13 @@ public class Star {
 			Data d = existsCell(this.open, x, y+1);
 			Data d2 = existsCell(this.close, x, y+1);
 			
-			if(matrix[x][y+1].getFather() == null) {
+			if(c.getFather() == null) {
 				c.setFather(m);
 			}
-			
 			if(!d.isFound() && !d2.isFound()) {
 				add(c);
 				matrix[x][y+1] = c;
 			}
-			
 			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + 1);
@@ -240,12 +235,10 @@ public class Star {
 			if(matrix[x][y-1].getFather() == null) {
 				c.setFather(m);
 			}
-			
 			if(!d.isFound() && !d2.isFound()) {
 				add(c);
 				matrix[x][y-1] = c;
 			}
-			
 			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + 1);
@@ -335,13 +328,14 @@ public class Star {
 				add(c);
 				matrix[x-1][y-1] = c;
 			}
-			else if ( d.isFound() && d.getCell().getG() > c.getG()) {
+			else if (d.isFound() && d.getCell().getG() > c.getG()) {
 				d.getCell().setFather(m);
 				d.getCell().setG(m.getG() + sTwo);
 			}	
 		}
 	}
-	
+
+
 	private Data existsCell(ArrayList<Cell> list, int x, int y){
 		boolean ok = false;
 		Cell found = null;

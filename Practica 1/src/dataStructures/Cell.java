@@ -83,13 +83,8 @@ public class Cell {
 	}
 
 	public int compareTo(Cell c2) {
-		if(this.h < c2.getH()) {
+		if(this.h + this.g < c2.getH() + c2.getG()) {
 			return -1;
-		}
-		else if (this.h == c2.getH()) {
-			if(this.f < c2.getF()) {
-				return -1;
-			}
 		}
 		return 1;
 	}
