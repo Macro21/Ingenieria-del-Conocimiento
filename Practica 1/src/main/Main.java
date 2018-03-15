@@ -4,10 +4,10 @@ import aStar.Board;
 
 public class Main {
 
-	public static void main(String[] args) {
-		// TODO Apéndice de método generado automáticamente
-		Board b = new Board();
-		b.ready();
-		
-	}
+    public static void main(String[] args) {
+            // TODO Apï¿½ndice de mï¿½todo generado automï¿½ticamente
+            Board b = new Board();
+            b.ready();
+
+    }
 }
