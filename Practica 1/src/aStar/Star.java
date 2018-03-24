@@ -45,11 +45,18 @@ public class Star {
         });
     }
 
-    public Cell[][] play(int startX, int startY, int goalX, int goalY) {
+    public Cell[][] play(int startX, int startY, int goalX, int goalY) throws Exception {
         boolean fail = false;
         //Celda de inicio
         Cell c = matrix[startX][startY];
-        if (!c.isBarrier()) {// Si no es un obstaculo
+        Cell c2 = matrix[goalX][goalY];
+        if(c.isBarrier()){
+            throw new Exception("Inicio en obstáculo!");
+        }
+        else if (c2.isBarrier()){
+            throw new Exception("Fin en obstáculo!");
+        }
+        else{// Si no es un obstaculo
             double a = (startX - goalX);
             double b = (startY - goalY);
             double stim = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
@@ -65,7 +72,7 @@ public class Star {
                 this.close.add(a);
                 this.open.remove(0);
             } else {
-                fail = true;
+                throw new Exception("Error, destino inalcanzable!");
             }
             //Si en cerrada es meta se acaba el proceso
             if (this.close.get(this.close.size() - 1).getX() == goalX && this.close.get(this.close.size() - 1).getY() == goalY) {

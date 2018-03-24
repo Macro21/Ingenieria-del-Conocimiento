@@ -65,7 +65,7 @@ public class Board {
     private final Color startCellColor = new Color(0, 0, 153);
     private final Color goalCellColor = new Color(128, 255, 0);
     private final Color barrierColor = new Color(0, 0, 0);
-    //private final Color defaultCellColor = new Color(255,255,204);
+    private final Color defaultCellColor = new Color(036, 231, 017);
     private final Color pathCellColor = new Color(102, 0, 0);
     private final Color cost1Color = new Color(255, 102, 102);
     private final Color cost2Color = new Color(255, 204, 51);
@@ -498,8 +498,9 @@ public class Board {
         this.pFrame.setVisible(true);
     }
 
-    private void wPointsMode(Star s) {
+    private void wPointsMode(Star s) throws Exception {
         ArrayList<WayPointStructure> allPath = new ArrayList<WayPointStructure>();
+        Cell[][] auxMa = this.matrix;
         wPointsList.remove(0);
         while (!wPointsList.isEmpty()) {
             Cell goal = wPointsList.get(0);
@@ -512,10 +513,12 @@ public class Board {
             startY = goalY;
             orderWayPoints();
             wPointsList.remove(goal);
-            repaintMatrix();
+            createMatrix();
             s = new Star(matrix);
         }
+        repaintMatrix(auxMa);
         wayPointsPathPaint(allPath);
+        
     }
     //Tengo la lista ordenada respecto al origen
 
@@ -625,7 +628,7 @@ public class Board {
     }
 
     public void markCell(int x, int y) {
-        this.pMatrix.getComponent(((x - 1) * N_COLS) + (y - 1)).setBackground(new Color(036, 231, 017));
+        this.pMatrix.getComponent(((x - 1) * N_COLS) + (y - 1)).setBackground(defaultCellColor);
     }
 
     public void markSpecialCell(int x, int y, Color c) {
@@ -733,6 +736,7 @@ public class Board {
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(new JFrame(), err, "Error, formato incorrecto", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception excep) {
+                    System.out.print(excep);
                     JOptionPane.showMessageDialog(new JFrame(), err, excep.getMessage(), JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -770,6 +774,29 @@ public class Board {
 
     public Cell[][] getMatrix() {
         return matrix;
+    }
+
+    private void repaintMatrix(Cell[][] auxMa) {
+        for (int i = 1; i <= N_ROWS; i++) {
+            for (int j = 1; j <= N_COLS; j++) {
+                switch (auxMa[i][j].getCost()) {
+                    case "cost1":
+                        this.matrix[i][j].setCost1();
+                        markSpecialCell(i, j, cost1Color);
+                        break;
+                    case "cost2":
+                        this.matrix[i][j].setCost2();
+                        markSpecialCell(i, j, cost2Color);
+                        break;
+                    case "cost3":
+                        this.matrix[i][j].setCost3();
+                        markSpecialCell(i, j, cost3Color);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
 
 }
