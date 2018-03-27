@@ -69,3 +69,7 @@ table th{
 #table{
     text-align: center;
 }
+table{
+    display: inline-block;
+    padding: 5px;
+}
