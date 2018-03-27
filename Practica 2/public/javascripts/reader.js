@@ -2,14 +2,14 @@
 
 function MyFileReader() {
 
-    this.readData = function readData(event,callback) {
+    this.readData = function readData(event,attrLen,callback) {
         let file = event.target.files[0];
         let reader = new FileReader();
         reader.onload = function(event) {
             let data = event.target.result;
-            let arrayOfLines = data.split('\n');
+            let arrayOfLines = data.split('\r\n');
             let info = [];
-            info = dataParser(arrayOfLines);
+            info = dataParser(attrLen,arrayOfLines);
             if(info.length <= 0){
                 callback(undefined);
             }
@@ -20,40 +20,31 @@ function MyFileReader() {
         reader.readAsText(file);
     };
 
-    function dataParser(arrayOfLines){
+    function dataParser(attrLen,arrayOfLines){
         let info = [];
-        let infoObj = {
-            weather : "", //temeratura exterior
-            temp : "", //temperatura
-            humidity : "",
-            wind : "",
-            play : ""
-        };
         for(let line of arrayOfLines){
             let arrayOfAttr = line.split(',');
-            infoObj.weather = arrayOfAttr[0];
-            infoObj.temp = arrayOfAttr[1];
-            infoObj.humidity = arrayOfAttr[2];
-            infoObj.wind = arrayOfAttr[3];
-            infoObj.play = arrayOfAttr[4];
-            info.push(infoObj);
-            infoObj = new Object();
+            //If attr file have the same nr of attributes, we read
+            if(arrayOfAttr.length === attrLen){
+                info.push(arrayOfAttr);
+            }  
         }
         return info;
     };
 
-    this.readAttributes = function readAttributes(event) {
+    this.readAttributes = function readAttributes(event, callback) {
         let file = event.target.files[0];
         let reader = new FileReader();
         reader.onload = function(event) {
             let data = event.target.result;
-            let arrayOfLines = data.split('\n');
-            attributesParser(arrayOfLines);
+            let attributes = data.split(',');
+            if(attributes.length <= 0){
+                callback(undefined);
+            }
+            else{
+                callback(null,attributes);
+            }
         };
         reader.readAsText(file);
-    };
-
-    function attributesParser(arrayOfLines){
-        console.log(arrayOfLines);
     };
 };
