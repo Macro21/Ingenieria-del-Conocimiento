@@ -14,7 +14,7 @@ function MyFileReader() {
                 callback(undefined);
             }
             else{
-                callback(null,info);
+                callback(null,info,arrayOfLines.length);
             }
         };
         reader.readAsText(file);
