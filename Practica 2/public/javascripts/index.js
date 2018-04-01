@@ -14,7 +14,7 @@ $(()=> {
     data = new MyFileReader();
     
     //TEMP
-    N = 14;
+    
     data = [
        //TempExter, Temperatura, Humed, Viento, Jugar
         ["soleado", "caluroso", "alta", "falso", "no"],
@@ -32,9 +32,9 @@ $(()=> {
         ["nublado", "caluroso", "normal", "falso", "si"],
         ["lluvioso", "templado", "alta", "verdad", "no"]
     ];
+    N = data.length;
     attributes = ["TiempoExterior", "Temperatura", "Humedad", "Viento", "Jugar"];
-    id3(attributes,data);
-
+    createTree(id3(attributes,data));
     //
    // putInTree(null);
 });
@@ -64,8 +64,10 @@ function attributesReader(ev){
 
 function id3(attributes, data){
     para++;
-    
-
+    let nodeStructure = {
+        text: '',
+        children : []
+    };
     let attributesDomain = [];//array de arrays donde cada subarray tiene el dominio de cada attributo
     let attrInfo = []; //cuenta los ejemplos positivos del fichero y los guarda en orden de attributo leido
     let totalExamples = data.length;  
@@ -83,27 +85,56 @@ function id3(attributes, data){
     showTables(attrInfo);
     let betterGainInfo = calculateGains(attrInfo);
     let decisionInfo = getID3Attributes(betterGainInfo,attrInfo[betterGainInfo.i]);
-  
-    let newData = prepareNextData(decisionInfo,data);
-    N = newData.length;
-    console.log(newData);
-    if(para < 10)
-        id3(attributes,newData);
+
+    nodeStructure.text = {name : betterGainInfo.type};//root
+
+    for(let i of decisionInfo){
+        if(i.info === 'next'){
+            let newData = prepareNextData(i.attrName,data);
+            N = newData.length;
+            let newNode = {
+                children: []
+            };
+            newNode.text = {name: i.attrName};
+            
+            let idVal = id3(attributes,newData);
+            newNode.children.push(idVal);
+            nodeStructure.children.push(newNode);
+        } 
+        else{
+            nodeStructure.children.push({text: {name : i.attrName}, children: [{text: {name: i.info}}]});
+        } 
+    }
+    return nodeStructure;
 };
 
-function prepareNextData(decisionInfo, data){
+function createTree(nodeStructure){
+    let div = $('<div>').attr('id','tree-simple').appendTo('.container');
+
+    var simple_chart_config = {
+        chart: {
+            container: "#tree-simple"
+        },
+        nodeStructure: {
+            text: { name: nodeStructure.text.name },
+            children: nodeStructure.children
+        }
+    };
+    var my_chart = new Treant(simple_chart_config);
+
+}; 
+
+function prepareNextData(attrName, data){
     let newData = [];
-    for(let attributeType of decisionInfo){
-        if(attributeType.info === 'next'){
-            for(let i = 0; i < data.length; i++){
-                for(let j = 0; j < data[i].length; j++){
-                    if(data[i][j] === attributeType.attrName){
-                        newData.push(data[i]);
-                    }
-                }
+
+    for(let i = 0; i < data.length; i++){
+        for(let j = 0; j < data[i].length; j++){
+            if(data[i][j] === attrName){
+                newData.push(data[i]);
             }
         }
     }
+    
     return newData;
 };
 
@@ -267,7 +298,6 @@ function showGains(attrInfo,gainsInfo,mainType){
     //infor(p,n) = p log2(p) n log2(n)
     //am: mérito (am) = E(ri*x infor (pi, ni))
     //ri = ai/N;
-    
     let div = $('<div>').attr('id','gains');
     div.append($('<h3>').text('Gains '));
     
@@ -293,14 +323,12 @@ function showGains(attrInfo,gainsInfo,mainType){
 };
 
 function getID3Attributes(betterGainInfo,attrInfo){
-
-    
     let info = [];
   
     let auxObj = {};
     for(let d of attrInfo){
         let p = d.nPositiveExamples/d.nExamples;
-        let n = (d - d.nPositiveExamples) / d.nExamples;
+        let n = (d.nExamples - d.nPositiveExamples) / d.nExamples;
         if(p === 1){ // yes
             auxObj.attrName = d.attrName;
             auxObj.info = 'si';
@@ -320,37 +348,6 @@ function getID3Attributes(betterGainInfo,attrInfo){
     }
     return info;
 };
-
-function putInTree(data){
-    //<div id="tree-simple" > </div>
-    var simple_chart_config = {
-        chart: {
-            container: "#tree-simple"
-        },
-        
-        nodeStructure: {
-            text: { name: "Parent node" },
-            children: [
-                {   
-                    text: { name: "First child" },
-                    children: [
-                        {
-                            text: {name: 'Andrey'}
-                        }
-                    ]
-                },
-                {
-                    text: { name: "Second child" }
-                }
-            ]
-        }
-    };
-
-    var my_chart = new Treant(simple_chart_config);
-
-    var chart = new Treant(simple_chart_config);
-    
-}; 
 
 function sortByGain(gainsInfo){
     for(let j = 0; j < gainsInfo.length; j++){

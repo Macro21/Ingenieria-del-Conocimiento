@@ -98,6 +98,12 @@ h3{
 .branch{
     display: flex;
 }
+
+.treeStyle{
+    width: 335px;
+    height: 160px;
+}
+
 /*
 .space{
     padding-left: 60px;
