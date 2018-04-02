@@ -5,17 +5,15 @@ let event;
 let positiveDecision = 'si';
 let nFinalDecision = 2;
 let N = 0;
-let infoCount = 1;
 
-let para = 0;
-let attributes; 
+//let attributes; 
 
 $(()=> {
     data = new MyFileReader();
     
     //TEMP
     
-    data = [
+   /* data = [
        //TempExter, Temperatura, Humed, Viento, Jugar
         ["soleado", "caluroso", "alta", "falso", "no"],
         ["soleado", "caluroso", "alta", "verdad", "no"],
@@ -34,22 +32,25 @@ $(()=> {
     ];
     N = data.length;
     attributes = ["TiempoExterior", "Temperatura", "Humedad", "Viento", "Jugar"];
-    createTree(id3(attributes,data));
-    //
-   // putInTree(null);
+    createTree(id3(attributes,data));*/
+
 });
 
 function dataReader(ev){
     event = ev;
+    var filename = $('#dataFile').val().replace(/C:\\fakepath\\/i, '');
+    $('#dataFileLbl').text(filename);
 };
 
 function attributesReader(ev){
+    var filename = $('#attrFile').val().replace(/C:\\fakepath\\/i, '');
+    $('#attrFileLbl').text(filename);
     data.readAttributes(ev,(err,attributes)=>{
         if(attributes && event){
             data.readData(event,attributes.length,(err,data,dataLen)=>{
                 if(data){
                     N = dataLen;
-                    id3(attributes,data);
+                    createTree(id3(attributes,data));
                 }
                 else{
                     alert("Choose a data file and then attributes file!");
@@ -63,7 +64,7 @@ function attributesReader(ev){
 };
 
 function id3(attributes, data){
-    para++;
+
     let nodeStructure = {
         text: '',
         children : []
@@ -96,9 +97,7 @@ function id3(attributes, data){
                 children: []
             };
             newNode.text = {name: i.attrName};
-            
-            let idVal = id3(attributes,newData);
-            newNode.children.push(idVal);
+            newNode.children.push(id3(attributes,newData));
             nodeStructure.children.push(newNode);
         } 
         else{
@@ -109,11 +108,18 @@ function id3(attributes, data){
 };
 
 function createTree(nodeStructure){
+    
     let div = $('<div>').attr('id','tree-simple').appendTo('.container');
 
     var simple_chart_config = {
         chart: {
-            container: "#tree-simple"
+            container: "#tree-simple",
+            connectors: {
+                type: 'bCurve',
+                style: {
+                    "stroke": 'green'
+                }
+            },
         },
         nodeStructure: {
             text: { name: nodeStructure.text.name },
@@ -121,7 +127,6 @@ function createTree(nodeStructure){
         }
     };
     var my_chart = new Treant(simple_chart_config);
-
 }; 
 
 function prepareNextData(attrName, data){
@@ -196,9 +201,9 @@ function showTables(attrInfo){
 };
 
 function showDataInfo(attributes,data){
-    let div = $('<div>').attr('id','info'+ infoCount);
+    let div = $('<div>');
     div.css('text-align','center');
-    infoCount++;
+   
     let table = $('<table>');
     //Header
     let head = $('<thead>');
@@ -289,12 +294,12 @@ function calculateGains(attrInfo){
     }
 
     gainsInfo = sortByGain(gainsInfo);
-    showGains(attrInfo,gainsInfo,gainsInfo[0].type);
+    showGains(attrInfo,gainsInfo);
     return gainsInfo[0];
 };
 
 
-function showGains(attrInfo,gainsInfo,mainType){
+function showGains(attrInfo,gainsInfo){
     //infor(p,n) = p log2(p) n log2(n)
     //am: mérito (am) = E(ri*x infor (pi, ni))
     //ri = ai/N;

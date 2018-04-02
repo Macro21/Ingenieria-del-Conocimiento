@@ -104,8 +104,14 @@ h3{
     height: 160px;
 }
 
-/*
-.space{
-    padding-left: 60px;
-    padding-right: 60px;
-  }*/
+.node {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: bold;
+    border: 2px solid black;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 12px;
+    padding-bottom: 0px; 
+    background-color: blueviolet;
+    color: black;
+}
