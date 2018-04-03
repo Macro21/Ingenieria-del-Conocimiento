@@ -6,6 +6,9 @@ let positiveDecision = 'si';
 let nFinalDecision = 2;
 let N = 0;
 
+let attributeMap = new Object(); // or var map = {};
+let domain = [];
+
 $(()=> {
     data = new MyFileReader();
 });
@@ -24,6 +27,9 @@ function attributesReader(ev){
             data.readData(event,attributes.length,(err,data,dataLen)=>{
                 if(data){
                     N = dataLen;
+                    for(let i = 0; i < attributes.length; i++){
+                        attributeMap[attributes[i]] = i;
+                    }
                     createTree(id3(attributes,data));
                 }
                 else{
@@ -65,7 +71,7 @@ function id3(attributes, data){
 
     for(let i of decisionInfo){
         if(i.info === 'next'){
-            let newData = prepareNextData(i.attrName,data);
+            let newData = prepareNextData(i.attrName,i.mainType,data);
             N = newData.length;
             let newNode = {
                 children: []
@@ -81,17 +87,15 @@ function id3(attributes, data){
     return nodeStructure;
 };
 
-function prepareNextData(attrName, data){
+function prepareNextData(attrName, mainType, data){
     let newData = [];
-
     for(let i = 0; i < data.length; i++){
         for(let j = 0; j < data[i].length; j++){
-            if(data[i][j] === attrName){
+            if(data[i][j] === attrName && mainType === j){
                 newData.push(data[i]);
             }
         }
     }
-    
     return newData;
 };
 
@@ -171,7 +175,6 @@ function calculateGains(attrInfo){
         auxObj = new Object();
         gainValue = 0;
     }
-
     gainsInfo = sortByGain(gainsInfo);
     showGains(attrInfo,gainsInfo);
     return gainsInfo[0];
@@ -179,11 +182,13 @@ function calculateGains(attrInfo){
 
 function getID3Attributes(betterGainInfo,attrInfo){
     let info = [];
-  
+    
     let auxObj = {};
+    let i = 0;
     for(let d of attrInfo){
         let p = d.nPositiveExamples/d.nExamples;
         let n = (d.nExamples - d.nPositiveExamples) / d.nExamples;
+        auxObj.mainType = attributeMap[betterGainInfo.type];
         if(p === 1){ // yes
             auxObj.attrName = d.attrName;
             auxObj.info = 'si';
@@ -200,6 +205,7 @@ function getID3Attributes(betterGainInfo,attrInfo){
             info.push(auxObj);
         }
         auxObj = new Object();
+        i++;
     }
     return info;
 };
