@@ -6,34 +6,8 @@ let positiveDecision = 'si';
 let nFinalDecision = 2;
 let N = 0;
 
-//let attributes; 
-
 $(()=> {
     data = new MyFileReader();
-    
-    //TEMP
-    
-   /* data = [
-       //TempExter, Temperatura, Humed, Viento, Jugar
-        ["soleado", "caluroso", "alta", "falso", "no"],
-        ["soleado", "caluroso", "alta", "verdad", "no"],
-        ["nublado", "caluroso", "alta", "falso", "si"],
-        ["lluvioso", "templado", "alta", "falso", "si"],
-        ["lluvioso", "frio", "normal", "falso", "si"],
-        ["lluvioso", "frio", "normal", "verdad", "no"],
-        ["nublado", "frio", "normal", "verdad", "si"],
-        ["soleado", "templado", "alta", "falso", "no"],
-        ["soleado", "frio", "normal", "falso", "si"],
-        ["lluvioso", "templado", "normal", "falso", "si"],
-        ["soleado", "templado", "normal", "verdad", "si"],
-        ["nublado", "templado", "alta", "verdad", "si"],
-        ["nublado", "caluroso", "normal", "falso", "si"],
-        ["lluvioso", "templado", "alta", "verdad", "no"]
-    ];
-    N = data.length;
-    attributes = ["TiempoExterior", "Temperatura", "Humedad", "Viento", "Jugar"];
-    createTree(id3(attributes,data));*/
-
 });
 
 function dataReader(ev){
@@ -107,28 +81,6 @@ function id3(attributes, data){
     return nodeStructure;
 };
 
-function createTree(nodeStructure){
-    
-    let div = $('<div>').attr('id','tree-simple').appendTo('.container');
-
-    var simple_chart_config = {
-        chart: {
-            container: "#tree-simple",
-            connectors: {
-                type: 'bCurve',
-                style: {
-                    "stroke": 'green'
-                }
-            },
-        },
-        nodeStructure: {
-            text: { name: nodeStructure.text.name },
-            children: nodeStructure.children
-        }
-    };
-    var my_chart = new Treant(simple_chart_config);
-}; 
-
 function prepareNextData(attrName, data){
     let newData = [];
 
@@ -192,6 +144,144 @@ function countPositiveExamples(attrName,attrDomain,attributes,data){
     }
     return attrInfo;
 };
+
+function calculateGains(attrInfo){
+
+    let gainsInfo = [];
+    let auxObj = {};
+    let gainValue = 0;
+    let r = 0;
+    let inforV = 0;
+
+    for(let i = 0; i < attrInfo.length; i++){
+        for(let j = 0; j < attrInfo[i].length; j++){
+            r = attrInfo[i][j].nExamples/N;
+            let p = attrInfo[i][j].nPositiveExamples/attrInfo[i][j].nExamples;
+            let n = (attrInfo[i][j].nExamples - attrInfo[i][j].nPositiveExamples) /  attrInfo[i][j].nExamples;
+            inforV = infor(p,n);
+            if(isNaN(inforV))
+                inforV = 0;
+            gainValue += (r*inforV);
+        }
+        gainValue = gainValue.toFixed(3);
+        auxObj.i = i;
+        auxObj.type = attrInfo[i][0].attrType;
+        auxObj.gain = gainValue;
+        gainsInfo.push(auxObj); 
+        auxObj = new Object();
+        gainValue = 0;
+    }
+
+    gainsInfo = sortByGain(gainsInfo);
+    showGains(attrInfo,gainsInfo);
+    return gainsInfo[0];
+};
+
+function getID3Attributes(betterGainInfo,attrInfo){
+    let info = [];
+  
+    let auxObj = {};
+    for(let d of attrInfo){
+        let p = d.nPositiveExamples/d.nExamples;
+        let n = (d.nExamples - d.nPositiveExamples) / d.nExamples;
+        if(p === 1){ // yes
+            auxObj.attrName = d.attrName;
+            auxObj.info = 'si';
+            info.push(auxObj);
+        }
+        else if (n === 1){
+            auxObj.attrName = d.attrName;
+            auxObj.info = 'no';
+            info.push(auxObj);
+        }
+        else{
+            auxObj.attrName = d.attrName;
+            auxObj.info = 'next';
+            info.push(auxObj);
+        }
+        auxObj = new Object();
+    }
+    return info;
+};
+
+function sortByGain(gainsInfo){
+    for(let j = 0; j < gainsInfo.length; j++){
+        for(let i = 0; i < gainsInfo.length - 1; i++){
+            if(gainsInfo[i+1].gain < gainsInfo[i].gain){
+                let aux = gainsInfo[i+1];
+                gainsInfo[i+1] = gainsInfo[i];
+                gainsInfo[i] = aux;
+            }
+        }
+    }
+    return gainsInfo;
+}
+
+function infor(p,n){
+    //infor(p,n) = -p log2(p)- n log2(n)
+    let log2p = log(2,p);
+    let log2n = log(2,n);
+    return -p*log2p-n*log2n;
+};
+
+function log (base,val){
+    return Math.log(val) / Math.log(base);
+};
+
+
+//Vista
+
+function createTree(nodeStructure){
+    
+    let div = $('<div>').attr('id','tree-simple').appendTo('.container');
+
+    var simple_chart_config = {
+        chart: {
+            container: "#tree-simple",
+            connectors: {
+                type: 'bCurve',
+                style: {
+                    "stroke": 'green'
+                }
+            },
+        },
+        nodeStructure: {
+            text: { name: nodeStructure.text.name },
+            children: nodeStructure.children
+        }
+    };
+    var my_chart = new Treant(simple_chart_config);
+}; 
+
+function showGains(attrInfo,gainsInfo){
+    //infor(p,n) = p log2(p) n log2(n)
+    //am: mérito (am) = E(ri*x infor (pi, ni))
+    //ri = ai/N;
+    let div = $('<div>').attr('id','gains');
+    div.append($('<h3>').text('Gains '));
+    
+    let gainInfo = [];
+
+    for(let i = 0; i < attrInfo.length; i++){
+        let gain = 'Gain(' + attrInfo[i][0].attrType + ') ' + ' = ';
+        for(let j = 0; j < attrInfo[i].length; j++){
+            gain += (attrInfo[i][j].nExamples + '/' + N + ' * infor(' + (attrInfo[i][j].nPositiveExamples + '/' + attrInfo[i][j].nExamples) +',' + (attrInfo[i][j].nExamples - attrInfo[i][j].nPositiveExamples) + '/' + attrInfo[i][j].nExamples) + ')' + ' + ';
+        }
+        let aux = gain.slice(0,gain.length-2);
+        aux += ' = ';
+        gainInfo.push(aux);
+    }   
+ 
+    let k = 0;
+    for(let k = 0; k < gainsInfo.length; k++){
+        div.append($('<h4>').text((k+1 )+ 'º ' + gainInfo[gainsInfo[k].i] + gainsInfo[k].gain));
+    }
+
+    div.append($('<hr>').addClass('hrStyle'));
+    $('.container').append(div);
+};
+
+
 
 function showTables(attrInfo){
     let div = $('<div>').attr('id','tables');
@@ -264,116 +354,4 @@ function createTable(title,rows,cols,attrInfo,div){
     }
     div.append(table);
     $('.container').append(div);
-};
-
-function calculateGains(attrInfo){
-
-    let gainsInfo = [];
-    let auxObj = {};
-    let gainValue = 0;
-    let r = 0;
-    let inforV = 0;
-
-    for(let i = 0; i < attrInfo.length; i++){
-        for(let j = 0; j < attrInfo[i].length; j++){
-            r = attrInfo[i][j].nExamples/N;
-            let p = attrInfo[i][j].nPositiveExamples/attrInfo[i][j].nExamples;
-            let n = (attrInfo[i][j].nExamples - attrInfo[i][j].nPositiveExamples) /  attrInfo[i][j].nExamples;
-            inforV = infor(p,n);
-            if(isNaN(inforV))
-                inforV = 0;
-            gainValue += (r*inforV);
-        }
-        gainValue = gainValue.toFixed(3);
-        auxObj.i = i;
-        auxObj.type = attrInfo[i][0].attrType;
-        auxObj.gain = gainValue;
-        gainsInfo.push(auxObj); 
-        auxObj = new Object();
-        gainValue = 0;
-    }
-
-    gainsInfo = sortByGain(gainsInfo);
-    showGains(attrInfo,gainsInfo);
-    return gainsInfo[0];
-};
-
-
-function showGains(attrInfo,gainsInfo){
-    //infor(p,n) = p log2(p) n log2(n)
-    //am: mérito (am) = E(ri*x infor (pi, ni))
-    //ri = ai/N;
-    let div = $('<div>').attr('id','gains');
-    div.append($('<h3>').text('Gains '));
-    
-    let gainInfo = [];
-
-    for(let i = 0; i < attrInfo.length; i++){
-        let gain = 'Gain(' + attrInfo[i][0].attrType + ') ' + ' = ';
-        for(let j = 0; j < attrInfo[i].length; j++){
-            gain += (attrInfo[i][j].nExamples + '/' + N + ' * infor(' + (attrInfo[i][j].nPositiveExamples + '/' + attrInfo[i][j].nExamples) +',' + (attrInfo[i][j].nExamples - attrInfo[i][j].nPositiveExamples) + '/' + attrInfo[i][j].nExamples) + ')' + ' + ';
-        }
-        let aux = gain.slice(0,gain.length-2);
-        aux += ' = ';
-        gainInfo.push(aux);
-    }   
- 
-    let k = 0;
-    for(let k = 0; k < gainsInfo.length; k++){
-        div.append($('<h4>').text((k+1 )+ 'º ' + gainInfo[gainsInfo[k].i] + gainsInfo[k].gain));
-    }
-
-    div.append($('<hr>').addClass('hrStyle'));
-    $('.container').append(div);
-};
-
-function getID3Attributes(betterGainInfo,attrInfo){
-    let info = [];
-  
-    let auxObj = {};
-    for(let d of attrInfo){
-        let p = d.nPositiveExamples/d.nExamples;
-        let n = (d.nExamples - d.nPositiveExamples) / d.nExamples;
-        if(p === 1){ // yes
-            auxObj.attrName = d.attrName;
-            auxObj.info = 'si';
-            info.push(auxObj);
-        }
-        else if (n === 1){
-            auxObj.attrName = d.attrName;
-            auxObj.info = 'no';
-            info.push(auxObj);
-        }
-        else{
-            auxObj.attrName = d.attrName;
-            auxObj.info = 'next';
-            info.push(auxObj);
-        }
-        auxObj = new Object();
-    }
-    return info;
-};
-
-function sortByGain(gainsInfo){
-    for(let j = 0; j < gainsInfo.length; j++){
-        for(let i = 0; i < gainsInfo.length - 1; i++){
-            if(gainsInfo[i+1].gain < gainsInfo[i].gain){
-                let aux = gainsInfo[i+1];
-                gainsInfo[i+1] = gainsInfo[i];
-                gainsInfo[i] = aux;
-            }
-        }
-    }
-    return gainsInfo;
-}
-
-function infor(p,n){
-    //infor(p,n) = -p log2(p)- n log2(n)
-    let log2p = log(2,p);
-    let log2n = log(2,n);
-    return -p*log2p-n*log2n;
-};
-
-function log (base,val){
-    return Math.log(val) / Math.log(base);
 };
