@@ -19,6 +19,9 @@ function dataReader(ev){
     $('#dataFileLbl').text(filename);
 };
 
+/*
+    Read data and attributes when both files are ready.
+*/
 function attributesReader(ev){
     var filename = $('#attrFile').val().replace(/C:\\fakepath\\/i, '');
     $('#attrFileLbl').text(filename);
@@ -43,10 +46,17 @@ function attributesReader(ev){
     });
 };
 
+/**
+ * 
+ * @param {*} attributes 
+ * @param {*} data 
+ * 
+ * This is the main algorithm. Show the info and calculate the next attributes and data for the next call to id3
+ */
 function id3(attributes, data){
 
     let nodeStructure = {
-        text: '',
+        text: {},
         children : []
     };
     let attributesDomain = [];//array de arrays donde cada subarray tiene el dominio de cada attributo
@@ -67,26 +77,43 @@ function id3(attributes, data){
     let betterGainInfo = calculateGains(attrInfo);
     let decisionInfo = getID3Attributes(betterGainInfo,attrInfo[betterGainInfo.i]);
 
-    nodeStructure.text = {name : betterGainInfo.type};//root
+    nodeStructure.text.name = betterGainInfo.type;//root
+    nodeStructure.text.title = "gain " + betterGainInfo.gain;
+    nodeStructure.text.desc = "samples " + data.length;
+    let j = 0;
 
     for(let i of decisionInfo){
         if(i.info === 'next'){
             let newData = prepareNextData(i.attrName,i.mainType,data);
             N = newData.length;
             let newNode = {
+                text : {},
                 children: []
             };
-            newNode.text = {name: i.attrName};
+            newNode.text.name = i.attrName;
+            newNode.text.desc = "samples " + attrInfo[betterGainInfo.i][j].nExamples;
+            newNode.text.title = 'positive ' + attrInfo[betterGainInfo.i][j].nPositiveExamples;
             newNode.children.push(id3(attributes,newData));
             nodeStructure.children.push(newNode);
         } 
         else{
-            nodeStructure.children.push({text: {name : i.attrName}, children: [{text: {name: i.info}}]});
-        } 
+            nodeStructure.children.push({text: {name : i.attrName,
+                desc : "samples " + attrInfo[betterGainInfo.i][j].nExamples, title: 'positive ' + attrInfo[betterGainInfo.i][j].nPositiveExamples},
+                children: [{text: {name: i.info}}]});
+        }
+        j++;
     }
     return nodeStructure;
 };
 
+/**
+ * 
+ * @param {*} attrName 
+ * @param {*} mainType 
+ * @param {*} data 
+ * 
+ * Change the global data according to mainType and attrName
+ */
 function prepareNextData(attrName, mainType, data){
     let newData = [];
     for(let i = 0; i < data.length; i++){
@@ -100,9 +127,11 @@ function prepareNextData(attrName, mainType, data){
 };
 
 /**
- * @data: array of all data
- * @attr: index of data
- * @return: this function return an array with the domain of the attr. For example: ['soleado','nublado','lluvioso'] for attr 0
+ * 
+ * @param {*} data 
+ * @param {*} attr index of attr
+ * @param {*} id3Info 
+ * This function return an array with the domain of the attr. For example: ['soleado','nublado','lluvioso'] for attr 0
  */
 function countAttrDomain(data,attr,id3Info){
     let types = [];
@@ -121,6 +150,15 @@ function countAttrDomain(data,attr,id3Info){
     return types;
 };
 
+/**
+ * 
+ * @param {*} attrName 
+ * @param {*} attrDomain 
+ * @param {*} attributes 
+ * @param {*} data 
+ * 
+ * Count the number of possitive examples for each attrDomain in data.
+ */
 function countPositiveExamples(attrName,attrDomain,attributes,data){
     //attrName = temperaturaExterior
     //attrDomain ["soleado","nublado","llueve"]
@@ -149,6 +187,10 @@ function countPositiveExamples(attrName,attrDomain,attributes,data){
     return attrInfo;
 };
 
+/**
+ * @param {*} attrInfo 
+ * Calculate the gains for each attrInfo, show the result, and return the better gain info
+ */
 function calculateGains(attrInfo){
 
     let gainsInfo = [];
@@ -180,11 +222,15 @@ function calculateGains(attrInfo){
     return gainsInfo[0];
 };
 
+/**
+ * @param {*} betterGainInfo 
+ * @param {*} attrInfo 
+ * For each attrInfo return 'si' or 'no' like final desicion of this branch, or next if the id3 algorithm need more steps
+ */
 function getID3Attributes(betterGainInfo,attrInfo){
     let info = [];
     
     let auxObj = {};
-    let i = 0;
     for(let d of attrInfo){
         let p = d.nPositiveExamples/d.nExamples;
         let n = (d.nExamples - d.nPositiveExamples) / d.nExamples;
@@ -205,11 +251,14 @@ function getID3Attributes(betterGainInfo,attrInfo){
             info.push(auxObj);
         }
         auxObj = new Object();
-        i++;
     }
     return info;
 };
 
+/**
+ * @param {*} gainsInfo 
+ * Sort attributes by gain in ascending order.
+ */
 function sortByGain(gainsInfo){
     for(let j = 0; j < gainsInfo.length; j++){
         for(let i = 0; i < gainsInfo.length - 1; i++){
@@ -223,6 +272,12 @@ function sortByGain(gainsInfo){
     return gainsInfo;
 }
 
+/**
+ * 
+ * @param {*} p % of possitive examples
+ * @param {*} n % of negative examples
+ * This function return  -p log2(p)- n log2(n)
+ */
 function infor(p,n){
     //infor(p,n) = -p log2(p)- n log2(n)
     let log2p = log(2,p);
@@ -230,6 +285,11 @@ function infor(p,n){
     return -p*log2p-n*log2n;
 };
 
+/**
+ * @param {*} base 
+ * @param {*} val 
+ * This function calculate the log in base @base and value @val
+ */
 function log (base,val){
     return Math.log(val) / Math.log(base);
 };
@@ -239,20 +299,22 @@ function log (base,val){
 
 function createTree(nodeStructure){
     
-    let div = $('<div>').attr('id','tree-simple').appendTo('.container');
+    let div = $('<div>').attr('id','tree-simple').appendTo('body');
 
     var simple_chart_config = {
         chart: {
-            container: "#tree-simple",
+            container: '#tree-simple',
             connectors: {
                 type: 'bCurve',
                 style: {
-                    "stroke": 'green'
+                    'stroke-width' : 2,
+                    'stroke': 'green',
+                    'arrow-end': 'classic-wide-long'
                 }
             },
         },
         nodeStructure: {
-            text: { name: nodeStructure.text.name },
+            text: nodeStructure.text,
             children: nodeStructure.children
         }
     };
@@ -286,8 +348,6 @@ function showGains(attrInfo,gainsInfo){
     div.append($('<hr>').addClass('hrStyle'));
     $('.container').append(div);
 };
-
-
 
 function showTables(attrInfo){
     let div = $('<div>').attr('id','tables');

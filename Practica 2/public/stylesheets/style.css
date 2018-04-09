@@ -112,6 +112,16 @@ h3{
     padding-right: 4px;
     padding-top: 12px;
     padding-bottom: 0px; 
-    background-color: blueviolet;
-    color: black;
+    background-color: brown;
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.node-desc{
+    color: yellow;
+}
+
+.node-title{
+    color: greenyellow;
 }
