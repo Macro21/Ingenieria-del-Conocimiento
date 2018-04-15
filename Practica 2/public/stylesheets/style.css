@@ -125,3 +125,36 @@ h3{
 .node-title{
     color: greenyellow;
 }
+/*
+#attrInput{
+    width:50%;
+    float: left;
+} */
+#decisionInput button{
+    margin-left: 10px;
+}
+#decisionInput{
+    margin-left: -35px;
+}
+
+.row{
+   text-align: center;
+}
+
+#decisionInput label{
+   font: 20px "Lucida Grande", Helvetica, Arial, sans-serif;
+   color: darkgreen;
+}
+
+.solution{
+    background-color: darkgreen;
+}
+
+#decisionInput #searchSolution{
+    font: 30px "Lucida Grande", Helvetica, Arial, sans-serif;
+    margin-top: 4px;
+}
+
+#meg{
+    margin-left: 12px;
+}

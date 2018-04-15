@@ -8,6 +8,9 @@ let N = 0;
 
 let attributeMap = new Object(); // or var map = {};
 let domain = [];
+let finalTree;
+
+let domainMap;
 
 $(()=> {
     data = new MyFileReader();
@@ -33,7 +36,9 @@ function attributesReader(ev){
                     for(let i = 0; i < attributes.length; i++){
                         attributeMap[attributes[i]] = i;
                     }
-                    createTree(id3(attributes,data));
+                    finalTree = id3(attributes,data);
+                    createTree(finalTree);
+                    showDecisionInput();
                 }
                 else{
                     alert("Choose a data file and then attributes file!");
@@ -62,16 +67,18 @@ function id3(attributes, data){
     let attributesDomain = [];//array de arrays donde cada subarray tiene el dominio de cada attributo
     let attrInfo = []; //cuenta los ejemplos positivos del fichero y los guarda en orden de attributo leido
     let totalExamples = data.length;  
-    let id3Info = [];
 
     for(let i = 0; i<attributes.length; i++){
-        attributesDomain.push(countAttrDomain(data,i,id3Info)); 
+        attributesDomain.push(countAttrDomain(data,i)); 
     }
     
     for(let i = 0; i<attributesDomain.length-1; i++){
         attrInfo.push(countPositiveExamples(i,attributesDomain[i],attributes,data));
     }
 
+    if(!domainMap)
+        mapDomainFunc(attrInfo);
+    
     showDataInfo(attributes,data);
     showTables(attrInfo);
     let betterGainInfo = calculateGains(attrInfo);
@@ -106,6 +113,20 @@ function id3(attributes, data){
     return nodeStructure;
 };
 
+
+function mapDomainFunc(attrInfo){
+    domainMap = new Object();
+    let obj = [];
+    for(let attr of attrInfo){
+        for(let info of attr){
+           obj.push(info.attrName);
+        }
+        domainMap[attr[0].attrType] = obj;
+        obj = new Object();
+        obj = [];
+    }
+};
+
 /**
  * 
  * @param {*} attrName 
@@ -116,6 +137,7 @@ function id3(attributes, data){
  */
 function prepareNextData(attrName, mainType, data){
     let newData = [];
+    
     for(let i = 0; i < data.length; i++){
         for(let j = 0; j < data[i].length; j++){
             if(data[i][j] === attrName && mainType === j){
@@ -133,18 +155,11 @@ function prepareNextData(attrName, mainType, data){
  * @param {*} id3Info 
  * This function return an array with the domain of the attr. For example: ['soleado','nublado','lluvioso'] for attr 0
  */
-function countAttrDomain(data,attr,id3Info){
+function countAttrDomain(data,attr){
     let types = [];
     for(let t of data){
         if(types.indexOf(t[attr]) === -1){
-            if(id3Info.length > 1)
-                for(let a of id3Info){
-                    if(a.attrName === t[attr] && a.info === 'next'){
-                        types.push(t[attr]);
-                    }
-                }
-            else
-                types.push(t[attr]);
+            types.push(t[attr]);   
         }
     }
     return types;
@@ -225,7 +240,7 @@ function calculateGains(attrInfo){
 /**
  * @param {*} betterGainInfo 
  * @param {*} attrInfo 
- * For each attrInfo return 'si' or 'no' like final desicion of this branch, or next if the id3 algorithm need more steps
+ * For each attrInfo return 'si' or 'no' like final decision of this branch, or next if the id3 algorithm need more steps
  */
 function getID3Attributes(betterGainInfo,attrInfo){
     let info = [];
@@ -298,8 +313,8 @@ function log (base,val){
 //Vista
 
 function createTree(nodeStructure){
-    
-    let div = $('<div>').attr('id','tree-simple').appendTo('body');
+    $('#tree-simple').remove();
+    let div = $('<div>').attr('id','tree-simple').appendTo('body');  
 
     var simple_chart_config = {
         chart: {
@@ -315,6 +330,7 @@ function createTree(nodeStructure){
         },
         nodeStructure: {
             text: nodeStructure.text,
+            HTMLclass: nodeStructure.HTMLclass,
             children: nodeStructure.children
         }
     };
@@ -386,7 +402,6 @@ function showDataInfo(attributes,data){
 };
 
 function createTable(title,rows,cols,attrInfo,div){
-
     let table = $('<table>');
     //Header
     let head = $('<thead>');
@@ -420,4 +435,92 @@ function createTable(title,rows,cols,attrInfo,div){
     }
     div.append(table);
     $('.container').append(div);
+};
+
+function showDecisionInput(){
+    let div = $('<div>').attr('id','decisionInput');
+
+    let div2 =  $('<div>').addClass('form-group row');
+    $('<label>').attr('for','attrInput').addClass('col-4 col-form-label').attr('id','meg').text('Do you want know the decision for a specific values?').appendTo(div2);
+
+    let input = $('<input>').attr('id','attrInput').addClass('col-4 form-control');
+    input.attr('placeholder','Insert values followed by ",": soleado,caluroso,true...');
+    input.attr('onkeypress','enter(event)');
+    div2.append(input);
+
+    let button = $('<button>').attr('type','submit').addClass('btn btn-primary').text('Decide');
+    button.attr('onClick','callCalculate()');
+
+    let solution = $('<label>').attr('id','searchSolution').addClass('col-3 col-form-label').attr('for','attrInput');
+    
+    div2.append(button);
+    div2.append(solution);
+    div.append(div2);
+   
+
+    $('.container').append(div);
+   
+};
+
+function enter(e) {
+    if (e.keyCode == 13)
+        callCalculate();
+}
+
+function callCalculate(){
+    let data = $('#attrInput').prop('value').split(',');
+    let tree = JSON.parse(JSON.stringify(finalTree));
+    calculateDecision(data,tree,0);
+    createTree(tree);
+};
+
+function calculateDecision(data,tree,i){
+    if(tree.children && i <= data.length){
+        if(domainMap[tree.text.name].indexOf(data[i]) >= 0){
+            tree.HTMLclass = 'solution';
+            let index = searchIndexOf(data[i],tree.children);
+            tree.children[index].HTMLclass = 'solution';
+            let chil = getChilOfTree(data[i],tree);
+            //chil.HTMLclass = 'solution';
+            calculateDecision(data,chil,i+=1);
+        }
+        else
+            calculateDecision(data,tree,i+=1);
+    }
+    else{
+        tree.HTMLclass = 'solution';
+        let sol = tree.text.name;
+        if(sol === 'si' || sol === 'no')
+            $('#searchSolution').text(sol).css('color','darkgreen');
+        else
+            $('#searchSolution').text('Wrong input!').css('color','red');
+    }
+};
+
+function searchIndexOf(attrName,arrayOfChildren){
+    let sol = -1;
+    let found = false;
+    let i = 0;
+    while(i < arrayOfChildren.length && !found){
+        if(arrayOfChildren[i].text.name === attrName){
+            sol = i;
+            found = true;
+        }
+        i++;
+    }
+    return sol;
+};
+
+function getChilOfTree(attr,tree){
+    let i = 0;
+    let sol = [];
+    let found = false;
+    while(i < tree.children.length && !found){
+        if(tree.children[i].text.name === attr){
+            sol = tree.children[i].children[0];
+            found = true;
+        }
+        i++;
+    }
+    return sol;
 };
