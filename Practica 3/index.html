@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>ID3</title>
+    <title>Métodos de clasificación</title>
     
     <!-- Jquery -->
     <script src = "public/javascripts/jquery-3.2.1.min.js" type="text/javascript" ></script>
@@ -11,8 +11,6 @@
     <script src = "public/javascripts/bootstrap.bundle.js" type="text/javascript" ></script>
     <script src = "public/javascripts/bootstrap.js" type="text/javascript" ></script>
     <script src = "public/javascripts/bootstrap.js.map" type="text/map" ></script>
-    <script src = "public/javascripts/Treant.js"></script>
-    <script src = "public/javascripts/raphael.js"></script>
     <!--Bootstrap css -->
     <link rel='stylesheet' href='public/stylesheets/bootstrap-grid.css' />
     <link href='public/stylesheets/bootstrap-grid.css.map' />
@@ -21,7 +19,6 @@
     <link rel='stylesheet' href='public/stylesheets/bootstrap.css' />
     <link href='public/stylesheets/bootstrap.css.map' />
     <link href= 'public/stylesheets/datatables.min.css' />
-    <link rel="stylesheet" href="public/stylesheets/Treant.css" type="text/css"/>
     <!--My scripts -->
     <script src = "public/javascripts/reader.js" type="text/javascript" ></script>
     <script src = "public/javascripts/index.js" type="text/javascript" ></script>
@@ -31,18 +28,22 @@
     <body>  
         <div class = "container">
             <div id = "titleDiv">
-                <h1 id = "title">ID3</h1>
+                <h1 id = "title">Métodos de clasificación</h1>
                 <h3 id = "name">Andrei Ionut Vaduva</h3>
             </div>
             <hr class = "hrStyle"></hr>
             <div class="row justify-content-center align-items-center">
                 <label for="dataFile" id="dataFileLbl" class = "fileLbl" >Choose data file</label>
-                <input id= "dataFile" type="file" onchange="dataReader(event)">
+                <input id= "dataFile" type="file"
+                value = 'C:\Users\Andrei Ionut Vaduva\Documents\GitHub\Ingenieria-del-Conocimiento\Practica 3\examples\Iris2Clases.txt'
+               name = "dataFile">
 
+                <!--s
                 <label for="attrFile" id = "attrFileLbl" class = "fileLbl" >Choose attrributes file</label>
-                <input type="file" id = "attrFile" onchange="attributesReader(event)">
+                <input type="file" id = "attrFile" onchange="attributesReader(event)"> -->
             </div>
             <hr class = "hrStyle"></hr>
+            <div id = "table"></div>
         </div>
     </body>
 

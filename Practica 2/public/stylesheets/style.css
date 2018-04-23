@@ -56,20 +56,105 @@ a {
     padding-left: 14rem;
 }
 
-
 table tr td{
     padding: 5px;
-    border: 3px solid black;
-   
+    border: 3px solid rgb(0, 2, 97);
 }
+
 table th{
     padding: 10px;
-    border: 3px solid black;
+    border: 3px solid rgb(0, 2, 97);
+    color: brown;
 }
-#table{
+
+#tables, #tree{
     text-align: center;
 }
+
 table{
     display: inline-block;
     padding: 5px;
+}
+
+#gains{
+    display: inline;
+}
+
+.winner{
+    color: blue;
+}
+
+h3{
+    margin-top: 20px;
+    color: solid black;
+   
+}
+
+.branch2{
+    display: inline-block;
+    padding: 7px;
+}
+
+.branch{
+    display: flex;
+}
+
+.treeStyle{
+    width: 335px;
+    height: 160px;
+}
+
+.node {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: bold;
+    border: 2px solid black;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 12px;
+    padding-bottom: 0px; 
+    background-color: brown;
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.node-desc{
+    color: yellow;
+}
+
+.node-title{
+    color: greenyellow;
+}
+/*
+#attrInput{
+    width:50%;
+    float: left;
+} */
+#decisionInput button{
+    margin-left: 10px;
+}
+#decisionInput{
+    margin-left: -35px;
+}
+
+.row{
+   text-align: center;
+}
+
+#decisionInput label{
+   font: 20px "Lucida Grande", Helvetica, Arial, sans-serif;
+   color: darkgreen;
+}
+
+.solution{
+    background-color: darkgreen;
+}
+
+#decisionInput #searchSolution{
+    font: 30px "Lucida Grande", Helvetica, Arial, sans-serif;
+    margin-top: 4px;
+}
+
+#meg{
+    margin-left: 12px;
 }
