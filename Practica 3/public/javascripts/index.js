@@ -1,9 +1,13 @@
 "use strict";
 
 let data;
+let attributes = ['sepalLength','sepalWidth','petalLength','petalWidth'];
+let centroidMatrix = [[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
+let uMatrix = [[],[]];
+let b = 2;
+let epsilon = 0.01;
 
 $(()=> {
-  //  data = new MyFileReader();
     data =[
         "5.1,3.5,1.4,0.2,Iris-setosa",
         "4.9,3.0,1.4,0.2,Iris-setosa",
@@ -106,19 +110,98 @@ $(()=> {
         "5.1,2.5,3.0,1.1,Iris-versicolor",
         "5.7,2.8,4.1,1.3,Iris-versicolor"
     ];
-    
+    data = formatInputData();
+    calculateUmatrix(calculateD());
+    console.log(uMatrix);
 });
-/*
-$("#dataFile").load(dataReader());
 
-function dataReader(dir){
-    console.log(dir);
-    data.readData(event,4,(err,data)=>{
-        if(data){
-            console.log(data);
+/**
+ * This function parse the data file. 
+ * Global data change and take the plant format.
+ */
+function formatInputData(){
+    let plantGroup = [];
+    let plant = {
+        sepalLength: -1,
+        sepalWidth: -1,
+        petalLength: -1,
+        petalWidth: -1,
+        type: ""
+    }
+    plantGroup.push(plant);
+    //p format is "[5.7,2.8,4.1,1.3,Iris-versicolor]"
+    for(let p of data){
+        let aux = p.split(',');
+        plant.sepalLength = aux[0];
+        plant.sepalWidth = aux[1];
+        plant.petalLength = aux[2];
+        plant.petalWidth = aux[3];
+        plant.type = aux[4];
+        plantGroup.push(plant);
+        plant = new Object();
+    }
+    return plantGroup;
+};
+
+/**
+ * This function return a matrix with the next format:
+ * a matrix with 2 rows --> row 1 have d11,d21,....,dn1 --> and d11 = ||X1 - V1 ||^2, row 2 idem
+ * 2 values with a total sum for each row
+ */
+function calculateD(){
+    let dMatrix = { row1 : [], row2 : []};
+    let totalCentroid1 = 0;
+    let totalCentroid2 = 0;    
+    for(let i = 1; i < data.length; i++){
+        let sol = calculate(data[i],0);     
+        dMatrix.row1.push(sol);
+        totalCentroid1 += sol;
+    }
+
+    for(let i = 1; i < data.length; i++){
+        let sol = calculate(data[i],1);     
+        dMatrix.row2.push(sol);
+        totalCentroid2 += sol;
+    }
+
+    return {dMatrix: dMatrix, totalCentroid1: totalCentroid1, totalCentroid2: totalCentroid2};
+};
+
+/**
+ * 
+ * @param {*} x // a X object, [x1,x2,x3,x4]
+ * @param {*} j // the centroid. 1 --> v1, 2 --> v2
+ */
+function calculate(x,j){
+    let sol = 0;
+    let base = x.sepalLength - centroidMatrix[j][0];
+    sol += Math.pow(base, 2);
+    base = x.sepalWidth - centroidMatrix[j][1];
+    sol += Math.pow(base, 2);
+    base = x.petalLength - centroidMatrix[j][2];
+    sol += Math.pow(base, 2);
+    base = x.petalWidth - centroidMatrix[j][3];
+    sol += Math.pow(base, 2);
+    return sol;
+};
+
+/**
+ * This function calculate uMatrix, needed for recalculate centroidMatrix
+ * @param {*} infoCalculateD //data with a matrix and 2 calues. Its te return of calculateD() function
+ */
+function calculateUmatrix(infoCalculateD){
+    let dMatrix = infoCalculateD.dMatrix;
+    let totalCentroid1 = infoCalculateD.totalCentroid1;
+    let totalCentroid2 = infoCalculateD.totalCentroid2;
+    
+    for(let j = 0; j < 2; j++)
+        for(let i = 0; i < dMatrix.row1.length; i++){
+            let sol = 1/dMatrix.row1[i];
+            uMatrix[j].push(sol/totalCentroid1);
         }
-        else{
-            alert("Choose a data file and then attributes file!");
-        }
-    });
-}*/
+    
+};
+
+function recalculateCentroidMatrix(){
+    
+};
