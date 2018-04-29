@@ -1,11 +1,12 @@
 "use strict";
 
 let data;
-let attributes = ['sepalLength','sepalWidth','petalLength','petalWidth'];
-let centroidMatrix = [[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
-let uMatrix = [[],[]];
+let attributes = ['x1','x2','x3','x4'];
+let centroidMatrix = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
+let uMatrix = [[],[-1],[-1]];
 let b = 2;
 let epsilon = 0.01;
+let OldCentroidMatrix = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
 
 $(()=> {
     data =[
@@ -111,8 +112,8 @@ $(()=> {
         "5.7,2.8,4.1,1.3,Iris-versicolor"
     ];
     data = formatInputData();
-    calculateUmatrix(calculateD());
-    console.log(uMatrix);
+    kmeans();
+   
 });
 
 /**
@@ -120,22 +121,22 @@ $(()=> {
  * Global data change and take the plant format.
  */
 function formatInputData(){
-    let plantGroup = [];
     let plant = {
-        sepalLength: -1,
-        sepalWidth: -1,
-        petalLength: -1,
-        petalWidth: -1,
+        x1: -1,
+        x2: -1,
+        x3: -1,
+        x4: -1,
         type: ""
     }
-    plantGroup.push(plant);
+    let plantGroup = [{x1: -1, x2: -1, x3: -1, x4: -1, type: ""}];
+    
     //p format is "[5.7,2.8,4.1,1.3,Iris-versicolor]"
     for(let p of data){
         let aux = p.split(',');
-        plant.sepalLength = aux[0];
-        plant.sepalWidth = aux[1];
-        plant.petalLength = aux[2];
-        plant.petalWidth = aux[3];
+        plant.x1 = aux[0];
+        plant.x2 = aux[1];
+        plant.x3 = aux[2];
+        plant.x4 = aux[3];
         plant.type = aux[4];
         plantGroup.push(plant);
         plant = new Object();
@@ -143,65 +144,108 @@ function formatInputData(){
     return plantGroup;
 };
 
-/**
- * This function return a matrix with the next format:
- * a matrix with 2 rows --> row 1 have d11,d21,....,dn1 --> and d11 = ||X1 - V1 ||^2, row 2 idem
- * 2 values with a total sum for each row
- */
-function calculateD(){
-    let dMatrix = { row1 : [], row2 : []};
-    let totalCentroid1 = 0;
-    let totalCentroid2 = 0;    
-    for(let i = 1; i < data.length; i++){
-        let sol = calculate(data[i],0);     
-        dMatrix.row1.push(sol);
-        totalCentroid1 += sol;
-    }
-
-    for(let i = 1; i < data.length; i++){
-        let sol = calculate(data[i],1);     
-        dMatrix.row2.push(sol);
-        totalCentroid2 += sol;
-    }
-
-    return {dMatrix: dMatrix, totalCentroid1: totalCentroid1, totalCentroid2: totalCentroid2};
-};
 
 /**
- * 
+ *  retrun dij
  * @param {*} x // a X object, [x1,x2,x3,x4]
  * @param {*} j // the centroid. 1 --> v1, 2 --> v2
  */
-function calculate(x,j){
-    let sol = 0;
-    let base = x.sepalLength - centroidMatrix[j][0];
-    sol += Math.pow(base, 2);
-    base = x.sepalWidth - centroidMatrix[j][1];
-    sol += Math.pow(base, 2);
-    base = x.petalLength - centroidMatrix[j][2];
-    sol += Math.pow(base, 2);
-    base = x.petalWidth - centroidMatrix[j][3];
-    sol += Math.pow(base, 2);
-    return sol;
+function calculateD(i, j, sample){
+    let dij = 0;
+    let centroid = centroidMatrix[i];
+    let base = sample.x1 - centroid[0];
+    dij += Math.pow(base, b);
+    base = sample.x2 - centroid[1];
+    dij += Math.pow(base, b);
+    base = sample.x3 - centroid[2];
+    dij += Math.pow(base, b);
+    base = sample.x4 - centroid[3];
+    dij += Math.pow(base, b);
+    return dij;
 };
 
-/**
- * This function calculate uMatrix, needed for recalculate centroidMatrix
- * @param {*} infoCalculateD //data with a matrix and 2 calues. Its te return of calculateD() function
- */
-function calculateUmatrix(infoCalculateD){
-    let dMatrix = infoCalculateD.dMatrix;
-    let totalCentroid1 = infoCalculateD.totalCentroid1;
-    let totalCentroid2 = infoCalculateD.totalCentroid2;
-    
-    for(let j = 0; j < 2; j++)
-        for(let i = 0; i < dMatrix.row1.length; i++){
-            let sol = 1/dMatrix.row1[i];
-            uMatrix[j].push(sol/totalCentroid1);
+
+function calculateUmatrix(){
+    let Pvixj = 0;
+    for(let i = 1; i<=2; i++)
+        for (let j = 1; j < data.length; j++) {
+            const sample = data[j];
+            let dij =  calculateD(i,j,sample);
+            let dij2 = 0;
+            if(i == 1)
+                dij2 = calculateD(i+1,j,sample);
+            else
+                dij2 = calculateD(i-1,j,sample);
+            let num = (1 / dij);
+            Pvixj = num / (num + (1/dij2));
+            uMatrix[i].push(Pvixj);
         }
-    
 };
 
-function recalculateCentroidMatrix(){
+function recalculateCentroid(){
+    let totalDenominator1 = 0;
+    let totalDenominator2 = 0;
+    let totalNumerator1 = {x1: 0, x2: 0, x3: 0, x4: 0, type: ""};
+    let totalNumerator2 =  {x1: 0, x2: 0, x3: 0, x4: 0, type: ""};
+    let auxData = uMatrix[1];
+    let aux2Data = uMatrix[2];
     
+    let v1 = {x1: 0, x2: 0, x3: 0, x4: 0, type: ""};
+    let v2 = {x1: 0, x2: 0, x3: 0, x4: 0, type: ""};
+
+    for(let i = 1; i < auxData.length; i++){
+        totalDenominator1 += Math.pow(auxData[i],b);
+        totalDenominator2 += Math.pow(aux2Data[i],b);
+         
+    }
+
+    //v1
+    for(let i = 1; i < data.length; i++ && !stop){
+       let pro = Math.pow(auxData[i],b);
+       totalNumerator1.x1 += pro * data[i].x1;
+       totalNumerator1.x2 += pro * data[i].x2;
+       totalNumerator1.x3 += pro * data[i].x3;
+       totalNumerator1.x4 += pro * data[i].x4;
+       let pro2 = Math.pow(aux2Data[i],b);
+       totalNumerator2.x1 += pro2 * data[i].x1;
+       totalNumerator2.x2 += pro2 * data[i].x2;
+       totalNumerator2.x3 += pro2 * data[i].x3;
+       totalNumerator2.x4 += pro2 * data[i].x4;
+    }
+
+    v1.x1 = (totalNumerator1.x1 / totalDenominator1).toFixed(4);
+    v1.x2 = (totalNumerator1.x2 / totalDenominator1).toFixed(4);
+    v1.x3 = (totalNumerator1.x3 / totalDenominator1).toFixed(4);
+    v1.x4 = (totalNumerator1.x4 / totalDenominator1).toFixed(4);
+
+    
+    v2.x1 = (totalNumerator2.x1 / totalDenominator2).toFixed(4);
+    v2.x2 = (totalNumerator2.x2 / totalDenominator2).toFixed(4);
+    v2.x3 = (totalNumerator2.x3 / totalDenominator2).toFixed(4);
+    v2.x4 = (totalNumerator2.x4 / totalDenominator2).toFixed(4);
+
+    centroidMatrix[1] = [v1.x1, v1.x2, v1.x3, v1.x4];
+    centroidMatrix[2] = [v2.x1, v2.x2, v2.x3, v2.x4];
+
 };
+
+
+function kmeans(){
+    let t = 0;
+    let stop = false;
+    while(!stop && t < 10){
+        calculateUmatrix();
+        recalculateCentroid();
+        let v1euc = centroidMatrix[1][0] - OldCentroidMatrix[1][0] + centroidMatrix[1][1] - OldCentroidMatrix[1][1] +
+        centroidMatrix[1][2] - OldCentroidMatrix[1][2] + centroidMatrix[1][3] - OldCentroidMatrix[1][3];
+
+        let v2euc = centroidMatrix[2][0] - OldCentroidMatrix[2][0] + centroidMatrix[2][1] - OldCentroidMatrix[2][1] +
+        centroidMatrix[2][2] - OldCentroidMatrix[2][2] + centroidMatrix[2][3] - OldCentroidMatrix[2][3];
+
+        if( v1euc < epsilon || v2euc < epsilon)
+            stop = true;
+        OldCentroidMatrix = centroidMatrix.slice(); //Array CLONE!!! Easy
+        uMatrix = [[],[-1],[-1]];
+        t++;
+    }
+}
