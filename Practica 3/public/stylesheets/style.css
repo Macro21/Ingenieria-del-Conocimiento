@@ -8,6 +8,18 @@ a {
   color: #00B7FF;
 }
 
+#centroidDiv{
+    text-align: center;
+}
+
+#solveBtn{
+    margin: 15px;
+}
+
+#lblSol{
+    font-size: 25px;
+}
+
 #dataFile, #attrFile{
     opacity: 0;
     display: none;

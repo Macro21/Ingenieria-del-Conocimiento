@@ -111,16 +111,23 @@ $(()=> {
         "5.1,2.5,3.0,1.1,Iris-versicolor",
         "5.7,2.8,4.1,1.3,Iris-versicolor"
     ];
-    data = formatInputData();
-    kmeans();
-   
+    data = formatInput(data);//return an array of objects
+    kmeans(); //calculate the new centroids
+    let v1 = centroidMatrix[1];
+    let v2 = centroidMatrix[2];
+    $('#centroid1').html('v1: &emsp;' + v1[0] + '&emsp;' + v1[1] + '&emsp;' + v1[2] + '&emsp;' + v1[3]);
+    $('#centroid2').html('v2: &emsp;' + v2[0] + '&emsp;' + v2[1] + '&emsp;' + v2[2] + '&emsp;' + v2[3]);
+
+    showInputMode();
 });
+
+
 
 /**
  * This function parse the data file. 
  * Global data change and take the plant format.
  */
-function formatInputData(){
+function formatInput(dataInput){
     let plant = {
         x1: -1,
         x2: -1,
@@ -131,13 +138,18 @@ function formatInputData(){
     let plantGroup = [{x1: -1, x2: -1, x3: -1, x4: -1, type: ""}];
     
     //p format is "[5.7,2.8,4.1,1.3,Iris-versicolor]"
-    for(let p of data){
+    for(let p of dataInput){
         let aux = p.split(',');
         plant.x1 = aux[0];
         plant.x2 = aux[1];
         plant.x3 = aux[2];
         plant.x4 = aux[3];
-        plant.type = aux[4];
+        try{
+            plant.type = aux[4];
+        }
+        catch(err){
+
+        }
         plantGroup.push(plant);
         plant = new Object();
     }
@@ -226,14 +238,12 @@ function recalculateCentroid(){
 
     centroidMatrix[1] = [v1.x1, v1.x2, v1.x3, v1.x4];
     centroidMatrix[2] = [v2.x1, v2.x2, v2.x3, v2.x4];
-
 };
 
 
 function kmeans(){
-    let t = 0;
     let stop = false;
-    while(!stop && t < 10){
+    while(!stop){
         calculateUmatrix();
         recalculateCentroid();
         let v1euc = centroidMatrix[1][0] - OldCentroidMatrix[1][0] + centroidMatrix[1][1] - OldCentroidMatrix[1][1] +
@@ -245,7 +255,56 @@ function kmeans(){
         if( v1euc < epsilon || v2euc < epsilon)
             stop = true;
         OldCentroidMatrix = centroidMatrix.slice(); //Array CLONE!!! Easy
-        uMatrix = [[],[-1],[-1]];
-        t++;
+        if(!stop)
+            uMatrix = [[],[-1],[-1]];
     }
-}
+};
+
+function solve(){
+    let sample = [$('#sample').prop('value')];
+    let auxData = formatInput(sample);
+    let Pvixj1 = 0;
+    let Pvixj2 = 0;
+    let dij1 = calculateD(1,1,auxData[1]);
+    let dij2 = calculateD(2,1,auxData[1]);
+
+    let num1 = (1 / dij1);
+    let num2 = (1 / dij2);
+    let den = num1 + num2;
+    Pvixj1 = num1 / den;
+    Pvixj2 = num2 / den;
+    if(Pvixj1 > Pvixj2)
+        $('#sol').attr('value','Iris-setosa').removeClass().addClass('col-md-4 btn btn-success');
+    else
+        $('#sol').attr('value','Iris-versicolor').removeClass().addClass('col-md-4 btn btn-warning');
+};
+
+
+function showInputMode(){
+    let div = $('<div>').attr('id','inputSample');
+
+    let div2 =  $('<div>').addClass('form-group row');
+    let input = $('<input>').attr('id','sample').addClass('offset-md-2 text-center col-md-8 form-control');
+    input.attr('placeholder','Introduce la muestra separada por comas, Ej: 5.1,3.5,1.4,0.2');
+    input.attr('onkeypress','enter(event)');
+    div2.append(input);
+    let divB = $('<div>').addClass('col-md-12 text-center')
+    let button = $('<button>').attr('type','submit').addClass('btn btn-primary').text('Decide').attr('id','solveBtn');
+    button.attr('onClick','solve()');
+
+    let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
+    let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
+    let sol = $('<input>').attr('id','sol').addClass('col-md-4 btn btn-default');
+    sol.attr('placeholder','Introduce la muestra separada por comas: "\,\"');
+    sol.prop('readonly', true);
+
+    divB.append(button);
+    div2.append(divB);
+    div3.append(lbl);
+    div3.append(sol);
+    
+    div2.append(div3);
+    div.append(div2);
+    
+    $('.container').append(div);
+};
