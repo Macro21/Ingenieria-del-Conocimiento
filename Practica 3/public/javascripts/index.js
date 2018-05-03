@@ -285,7 +285,7 @@ function showInputMode(){
 
     let div2 =  $('<div>').addClass('form-group row');
     let input = $('<input>').attr('id','sample').addClass('offset-md-2 text-center col-md-8 form-control');
-    input.attr('placeholder','Introduce la muestra separada por comas, Ej: 5.1,3.5,1.4,0.2');
+    input.attr('placeholder','Introduce la muestra separada por comas "\,\" Ej: 5.1,3.5,1.4,0.2');
     input.attr('onkeypress','enter(event)');
     div2.append(input);
     let divB = $('<div>').addClass('col-md-12 text-center')
@@ -295,7 +295,7 @@ function showInputMode(){
     let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
     let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
     let sol = $('<input>').attr('id','sol').addClass('col-md-4 btn btn-default');
-    sol.attr('placeholder','Introduce la muestra separada por comas: "\,\"');
+    sol.attr('placeholder','Aqui se mostrará la solución');
     sol.prop('readonly', true);
 
     divB.append(button);
