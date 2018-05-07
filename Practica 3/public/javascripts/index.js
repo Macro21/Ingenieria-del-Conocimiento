@@ -2,7 +2,7 @@
 
 let data;
 let attributes = ['x1','x2','x3','x4'];
-
+let N = 0;
 //Kmeans
 let uMatrix = [[],[-1],[-1]];
 let b = 2;
@@ -120,6 +120,7 @@ $(()=> {
         "5.1,2.5,3.0,1.1,Iris-versicolor",
         "5.7,2.8,4.1,1.3,Iris-versicolor"
     ];
+    N = data.length;
     data = formatInput(data);//return an array of objects
     kmeans(); //calculate the new centroids
     let v1 = centroidMatrix[1];
@@ -127,8 +128,11 @@ $(()=> {
     $('#centroid1').html('v1: &emsp;' + v1[0] + '&emsp;' + v1[1] + '&emsp;' + v1[2] + '&emsp;' + v1[3]);
     $('#centroid2').html('v2: &emsp;' + v2[0] + '&emsp;' + v2[1] + '&emsp;' + v2[2] + '&emsp;' + v2[3]);
     showInputModeKmeans();
+    
     lloyd();
     showLloyd();
+   // bayes();
+    showBayes();
 });
 
 
@@ -186,6 +190,7 @@ function calculateD(i, sample){
     return dij;
 };
 
+//Kmeans
 
 function calculateUmatrix(){
     let Pvixj = 0;
@@ -320,6 +325,7 @@ function showInputModeKmeans(){
     
 };
 
+//Lloyd
 function showLloyd(){
     let v1 = centroidMatrixLloyd[1];
     let v2 = centroidMatrixLloyd[2];
@@ -457,8 +463,152 @@ function solveLloyd(){
     let den = num1 + num2;
     Pvixj1 = num1 / den;
     Pvixj2 = num2 / den;
+
     if(Pvixj1 > Pvixj2)
         $('#solLloyd').attr('value','Iris-setosa').removeClass().addClass('col-md-4 btn btn-success');
     else
         $('#solLloyd').attr('value','Iris-versicolor').removeClass().addClass('col-md-4 btn btn-warning');
 };
+
+//Bayes
+function showBayes(){
+
+    $('.container').append($('<br>'));
+    $('.container').append($('<hr>').addClass('hrStyle'));
+
+    let lloydDiv = $('<div>').addClass('centroidDiv');
+    lloydDiv.append($('<h1>').text('Algoritmo de Bayes'));
+    lloydDiv.append($('<br>'));
+    lloydDiv.append($('<h1>').attr('id','centroid1Bayes'));
+    lloydDiv.append($('<h1>').attr('id','centroid2Bayes'));
+    
+    $('.container').append(lloydDiv);
+
+    let div = $('<div>');
+
+    let div2 =  $('<div>').addClass('form-group row');
+    let input = $('<input>').attr('id','sampleBayes').addClass('offset-md-2 text-center col-md-8 form-control');
+    input.attr('placeholder','Introduce la muestra separada por comas "\,\" Ej: 5.1,3.5,1.4,0.2');
+    div2.append(input);
+    let divB = $('<div>').addClass('col-md-12 text-center')
+    let button = $('<button>').attr('type','submit').addClass('btn btn-primary').text('Decide').attr('id','solveBtn');
+    button.attr('onClick','solveBayes()');
+
+    let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
+    let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
+    let sol = $('<input>').attr('id','solBayes').addClass('col-md-4 btn btn-default');
+    sol.attr('placeholder','Aqui se mostrará la solución');
+    sol.prop('readonly', true);
+
+    divB.append(button);
+    div2.append(divB);
+    div3.append(lbl);
+    div3.append(sol);
+    
+    div2.append(div3);
+    div.append(div2);
+    
+    $('.container').append(div);
+
+};
+
+function solveBayes(){
+    let m1 = calculateM(1);
+    let m2 = calculateM(2);
+    let cov1 = covarianceMatrix(m1,1);
+    let cov2 = covarianceMatrix(m2,2);
+   
+    let input =  $('#sampleBayes').prop('value').split(',');
+    for(let i = 0; i < input.length; i++){
+        input[i] = Number(input[i]);
+    }
+    let inv = math.inv(cov1);
+    let deductXkm1 = [input[0]-m1.x1,input[1]-m1.x2, input[2]-m1.x3, input[3]-m1.x4];
+    let multiply = math.multiply(deductXkm1,inv);
+    let transp = math.transpose(deductXkm1);
+    let result = math.multiply(transp,multiply);
+   
+    let inv2 = math.inv(cov2);
+    let deductXkm2 = [input[0]-m2.x1,input[1]-m2.x2, input[2]-m2.x3, input[3]-m2.x4];
+    let multiply2 = math.multiply(deductXkm2,inv2);
+    let transp2 = math.transpose(deductXkm2);
+    let result2 = math.multiply(transp2,multiply2);
+   
+    if(result < result2)
+        $('#solBayes').attr('value','Iris-setosa').removeClass().addClass('col-md-4 btn btn-success');
+    else
+        $('#solBayes').attr('value','Iris-versicolor').removeClass().addClass('col-md-4 btn btn-warning');
+};
+
+/**
+ * return a vector with the average for each column of data
+ */
+function calculateM(classs){
+    let vector = {x1:0, x2:0, x3:0, x4:0};
+    let size;
+    let ini;
+    if(classs == 1){
+        size = N/2;
+        ini = 1;
+    }
+    else{
+        size = N;
+        ini = (N/2) + 1;
+    }
+        
+    for(let i = ini; i <= size; i++){
+        const sample = data[i];
+        vector.x1 += Number(sample.x1);
+        vector.x2 += Number(sample.x2);
+        vector.x3 += Number(sample.x3);
+        vector.x4 += Number(sample.x4);
+    }
+    vector.x1 /= (N/2);
+    vector.x2 /= (N/2);
+    vector.x3 /= (N/2);
+    vector.x4 /= (N/2);
+    return vector;
+};
+
+function covarianceMatrix(m,classs){
+    let v = [];
+    let size;
+    let ini;
+    let matrix = math.matrix([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]);
+    if(classs == 1){
+        size = N/2;
+        ini = 1;
+    }
+    else{
+        size = N;
+        ini = (N/2) + 1;
+    }    
+    for(let i = ini; i <= size; i++){
+        const sample = data[i];
+        let auxDeduct = {x1:0, x2:0, x3:0, x4:0};
+        auxDeduct.x1 = sample.x1 - m.x1;
+        auxDeduct.x2 = sample.x2 - m.x2;
+        auxDeduct.x3 = sample.x3 - m.x3;
+        auxDeduct.x4 = sample.x4 - m.x4;
+        let transp = math.transpose([[auxDeduct.x1],[auxDeduct.x2],[auxDeduct.x3],[auxDeduct.x4]]);
+        let multiply = math.multiply([[auxDeduct.x1],[auxDeduct.x2],[auxDeduct.x3],[auxDeduct.x4]], transp);
+        matrix = math.add(matrix,multiply);
+    }
+    return math.divide(matrix, ((N/2)-1));
+};
+
+function multiplyVector(auxDeduct){
+    auxDeduct.x1 *= auxDeduct.x1;
+    auxDeduct.x2 *= auxDeduct.x2;
+    auxDeduct.x3 *= auxDeduct.x3;
+    auxDeduct.x4 *= auxDeduct.x4;
+    return auxDeduct;
+};
+
+function sum(vector, auxDeduct){
+    vector.x1 += auxDeduct.x1;
+    vector.x2 += auxDeduct.x2;
+    vector.x3 += auxDeduct.x3;
+    vector.x4 += auxDeduct.x4;
+    return vector;
+}
