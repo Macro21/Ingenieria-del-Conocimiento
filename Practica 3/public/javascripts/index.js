@@ -16,7 +16,18 @@ let epsilonLoyd = 0.0000000001;
 let kMaxLoyd = 10;
 let centroidMatrixLloyd = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
 let OldCentroidMatrixLloyd = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
+//Bayes
+let d = 4;
 
+//SOM
+let epsilonSOM = 0.000001;
+let kMaxSom = 1000;
+let gammaSOM = 0.1;
+let alfaStart = 0.1;
+let altfaEnd = 0.01;
+let T = 0.00001;
+let centroidMatrixSOM = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
+let OldCentroidMatrixSOM = [[],[4.6,3.0,4.0,0.0],[6.8,3.4,4.6,0.7]];
 $(()=> {
     data =[
         "5.1,3.5,1.4,0.2,Iris-setosa",
@@ -131,8 +142,12 @@ $(()=> {
     
     lloyd();
     showLloyd();
-   // bayes();
+  
     showBayes();
+
+    som();
+    showSom();
+    
 });
 
 
@@ -179,6 +194,45 @@ function formatInput(dataInput){
 function calculateD(i, sample){
     let dij = 0;
     let centroid = centroidMatrix[i];
+    let base = sample.x1 - centroid[0];
+    dij += Math.pow(base, b);
+    base = sample.x2 - centroid[1];
+    dij += Math.pow(base, b);
+    base = sample.x3 - centroid[2];
+    dij += Math.pow(base, b);
+    base = sample.x4 - centroid[3];
+    dij += Math.pow(base, b);
+    return dij;
+};
+
+/**
+ *  retrun dij
+ * @param {*} x // a X object, [x1,x2,x3,x4]
+ * @param {*} i // the centroid. 1 --> v1, 2 --> v2
+ */
+function calculateDLloyd(i, sample){
+    let dij = 0;
+    let centroid = centroidMatrixLloyd[i];
+    let base = sample.x1 - centroid[0];
+    dij += Math.pow(base, b);
+    base = sample.x2 - centroid[1];
+    dij += Math.pow(base, b);
+    base = sample.x3 - centroid[2];
+    dij += Math.pow(base, b);
+    base = sample.x4 - centroid[3];
+    dij += Math.pow(base, b);
+    return Math.sqrt(dij);
+};
+
+/**
+ *  retrun dij
+ * @param {*} x // a X object, [x1,x2,x3,x4]
+ * @param {*} i // the centroid. 1 --> v1, 2 --> v2
+ */
+function calculateDSom(i, sampleMatrix){
+    let sample = {x1:sampleMatrix.get([0,0]),x2:sampleMatrix.get([1,0]),x3:sampleMatrix.get([2,0]),x4:sampleMatrix.get([3,0])};
+    let dij = 0;
+    let centroid = centroidMatrixSOM[i];
     let base = sample.x1 - centroid[0];
     dij += Math.pow(base, b);
     base = sample.x2 - centroid[1];
@@ -308,7 +362,7 @@ function showInputModeKmeans(){
     button.attr('onClick','solveKmeans()');
 
     let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
-    let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
+    let lbl = $('<label>').text('Resultado').addClass('col-md-2').attr('id','lblSol');
     let sol = $('<input>').attr('id','sol').addClass('col-md-4 btn btn-default');
     sol.attr('placeholder','Aqui se mostrará la solución');
     sol.prop('readonly', true);
@@ -353,7 +407,7 @@ function showLloyd(){
     button.attr('onClick','solveLloyd()');
 
     let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
-    let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
+    let lbl = $('<label>').text('Resultado').addClass('col-md-2').attr('id','lblSol');
     let sol = $('<input>').attr('id','solLloyd').addClass('col-md-4 btn btn-default');
     sol.attr('placeholder','Aqui se mostrará la solución');
     sol.prop('readonly', true);
@@ -371,38 +425,41 @@ function showLloyd(){
 };
 
 function updateLloydCentroids(){
-    let v1 = centroidMatrixLloyd[1];
-    let v2 = centroidMatrixLloyd[2];
-
+    
     for (let j = 1; j < data.length; j++) {
+        let v1 = centroidMatrixLloyd[1];
+        let v2 = centroidMatrixLloyd[2];
         const sample = data[j];
-        let d1 = calculateD(1,sample);
-        let d2 = calculateD(2,sample);
+        let sampleMatrix = math.matrix([[Number(sample.x1)],[Number(sample.x2)],[Number(sample.x3)],[Number(sample.x4)]]);
+
+        let d1 = calculateDLloyd(1,sample);
+        let d2 = calculateDLloyd(2,sample);
 
         if(d1 < d2){ // se actualiza c1
-            let sol = deduct(sample,v1);
-            sol = multiply(gammaKj,sol);
-            sol = add(sol,v1);
-            centroidMatrixLloyd[1] = [sol.x1,sol.x2,sol.x3,sol.x4];
+            let sol = 0;
+            let c1 = math.matrix([[v1[0]],[v1[1]],[v1[2]],[v1[3]]]); 
+            let subtractAndkMultiply = math.multiply(math.subtract(sampleMatrix,c1),gammaKj);
+            sol = math.add(c1,subtractAndkMultiply);
+            centroidMatrixLloyd[1] = [sol.get([0, 0]),sol.get([1, 0]),sol.get([2, 0]),sol.get([3, 0])];
         }
         else{// se actualiza c2
-            let sol = deduct(sample,v2);
-            sol = multiply(gammaKj,sol);
-            sol = add(sol,v2);
-            centroidMatrixLloyd[2] = [sol.x1,sol.x2,sol.x3,sol.x4];
+            let sol2 = 0;
+            let c2 = math.matrix([[v2[0]],[v2[1]],[v2[2]],[v2[3]]]);
+            let subtractAndkMultiply = math.multiply(math.subtract(sampleMatrix,c2),gammaKj);
+            sol2 = math.add(c2,subtractAndkMultiply);
+            centroidMatrixLloyd[2] = [sol2.get([0, 0]),sol2.get([1, 0]),sol2.get([2, 0]),sol2.get([3, 0])];
         }
     }
-    
 };
 
 function lloyd(){
     let stop = false;
-    let it = 0;
+    let it = 1;
     
-    while(!stop && it < kMaxLoyd){
+    while(!stop && it <= kMaxLoyd){
         updateLloydCentroids();
-        let v1euc = deductNewAndOldCentroids(centroidMatrixLloyd[1],OldCentroidMatrixLloyd[1]);
-        let v2euc = deductNewAndOldCentroids(centroidMatrixLloyd[2],OldCentroidMatrixLloyd[2]);
+        let v1euc = math.subtract(centroidMatrixLloyd[1],OldCentroidMatrixLloyd[1]);
+        let v2euc =  math.subtract(centroidMatrixLloyd[2],OldCentroidMatrixLloyd[2]);
 
         if( v1euc < epsilonLoyd && v2euc < epsilonLoyd)
             stop = true;
@@ -411,52 +468,13 @@ function lloyd(){
     }
 };
 
-
-function deductNewAndOldCentroids(vNew,vOld){
-    let sol = 0;
-    let aux = vNew[0] - vOld[0];
-    sol += Math.pow(aux,2);
-    aux = vNew[1] - vOld[1];
-    sol += Math.pow(aux,2);
-    aux = vNew[2] - vOld[2];
-    sol += Math.pow(aux,2);
-    aux = vNew[3] - vOld[3];
-    sol += Math.pow(aux,2);
-    return Math.sqrt(sol);
-};
-
-function deduct(sample,centroid){
-    let sol = {x1: -1, x2: -1, x3: -1, x4: -1, type: ""};
-    sol.x1 = sample.x1 - centroid[0];
-    sol.x2 = sample.x2 - centroid[1];
-    sol.x3 = sample.x3- centroid[2];
-    sol.x4 = sample.x4 - centroid[3];
-    return sol;
-};
-
-function multiply(gammaKj,x1v1Deduct){
-    x1v1Deduct.x1 *= gammaKj;
-    x1v1Deduct.x2 *= gammaKj;
-    x1v1Deduct.x3 *= gammaKj;
-    x1v1Deduct.x4 *= gammaKj;
-    return x1v1Deduct;
-};
-
-function add(sol,v1){
-    sol.x1 = (sol.x1 + v1[0]);
-    sol.x2 = (sol.x2 + v1[1]);
-    sol.x3 = (sol.x3 + v1[2]);
-    sol.x4 = (sol.x4 + v1[3]);
-    return sol;
-};
-
 function solveLloyd(){
     let sample = [$('#sampleLloyd').prop('value')];
     let auxData = formatInput(sample);
     let Pvixj1 = 0;
     let Pvixj2 = 0;
-    let dij1 = calculateD(1,auxData[1]);
-    let dij2 = calculateD(2,auxData[1]);
+    let dij1 = calculateDLloyd(1,auxData[1]);
+    let dij2 = calculateDLloyd(2,auxData[1]);
 
     let num1 = (1 / dij1);
     let num2 = (1 / dij2);
@@ -495,7 +513,7 @@ function showBayes(){
     button.attr('onClick','solveBayes()');
 
     let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
-    let lbl = $('<label>').text('Result').addClass('col-md-2').attr('id','lblSol');
+    let lbl = $('<label>').text('Resultado').addClass('col-md-2').attr('id','lblSol');
     let sol = $('<input>').attr('id','solBayes').addClass('col-md-4 btn btn-default');
     sol.attr('placeholder','Aqui se mostrará la solución');
     sol.prop('readonly', true);
@@ -517,24 +535,33 @@ function solveBayes(){
     let m2 = calculateM(2);
     let cov1 = covarianceMatrix(m1,1);
     let cov2 = covarianceMatrix(m2,2);
-   
+
     let input =  $('#sampleBayes').prop('value').split(',');
     for(let i = 0; i < input.length; i++){
         input[i] = Number(input[i]);
     }
     let inv = math.inv(cov1);
     let deductXkm1 = [input[0]-m1.x1,input[1]-m1.x2, input[2]-m1.x3, input[3]-m1.x4];
-    let multiply = math.multiply(deductXkm1,inv);
     let transp = math.transpose(deductXkm1);
-    let result = math.multiply(transp,multiply);
-   
+    let aux = math.multiply(-1/2,transp);
+    let mult = math.multiply(aux,inv);
+    let result = math.multiply(mult,deductXkm1);
+    
     let inv2 = math.inv(cov2);
     let deductXkm2 = [input[0]-m2.x1,input[1]-m2.x2, input[2]-m2.x3, input[3]-m2.x4];
-    let multiply2 = math.multiply(deductXkm2,inv2);
     let transp2 = math.transpose(deductXkm2);
-    let result2 = math.multiply(transp2,multiply2);
-   
-    if(result < result2)
+    let aux2 = math.multiply(-1/2,transp2);
+    let mult2 = math.multiply(aux2,inv2);
+    let result2 = math.multiply(mult2,deductXkm2);
+
+    let exp = Math.exp(result);
+    let part1 =  1 /  ( Math.pow((2*Math.PI),d/2) * (Math.pow(math.det(cov1),1/2)) );
+    let fxiw = part1 * exp;
+
+    let exp2 = Math.exp(result2);
+    let fxiw2 = 1 /  ( Math.pow((2*Math.PI),d/2) * (Math.pow(math.det(cov2),1/2)) ) * exp2;
+    console.log(fxiw);
+    if(fxiw > fxiw2)
         $('#solBayes').attr('value','Iris-setosa').removeClass().addClass('col-md-4 btn btn-success');
     else
         $('#solBayes').attr('value','Iris-versicolor').removeClass().addClass('col-md-4 btn btn-warning');
@@ -563,15 +590,14 @@ function calculateM(classs){
         vector.x3 += Number(sample.x3);
         vector.x4 += Number(sample.x4);
     }
-    vector.x1 /= (N/2);
-    vector.x2 /= (N/2);
-    vector.x3 /= (N/2);
-    vector.x4 /= (N/2);
+    vector.x1 = vector.x1 / (N/2);
+    vector.x2 = vector.x2 / (N/2);
+    vector.x3 = vector.x3 / (N/2);
+    vector.x4 = vector.x4 / (N/2);
     return vector;
 };
 
 function covarianceMatrix(m,classs){
-    let v = [];
     let size;
     let ini;
     let matrix = math.matrix([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]);
@@ -585,30 +611,126 @@ function covarianceMatrix(m,classs){
     }    
     for(let i = ini; i <= size; i++){
         const sample = data[i];
-        let auxDeduct = {x1:0, x2:0, x3:0, x4:0};
-        auxDeduct.x1 = sample.x1 - m.x1;
-        auxDeduct.x2 = sample.x2 - m.x2;
-        auxDeduct.x3 = sample.x3 - m.x3;
-        auxDeduct.x4 = sample.x4 - m.x4;
-        let transp = math.transpose([[auxDeduct.x1],[auxDeduct.x2],[auxDeduct.x3],[auxDeduct.x4]]);
-        let multiply = math.multiply([[auxDeduct.x1],[auxDeduct.x2],[auxDeduct.x3],[auxDeduct.x4]], transp);
+        let sample2 = math.matrix([[Number(sample.x1),Number(sample.x2),Number(sample.x3),Number(sample.x4)]]);
+        let m2 = math.matrix([[m.x1,m.x2,m.x3,m.x4]]);
+        let subtract = math.subtract(sample2,m2);
+        let transp = math.transpose(subtract);
+        let multiply = math.multiply(transp,subtract);
         matrix = math.add(matrix,multiply);
     }
-    return math.divide(matrix, ((N/2)-1));
+    return math.divide(matrix, (N/2));
 };
 
-function multiplyVector(auxDeduct){
-    auxDeduct.x1 *= auxDeduct.x1;
-    auxDeduct.x2 *= auxDeduct.x2;
-    auxDeduct.x3 *= auxDeduct.x3;
-    auxDeduct.x4 *= auxDeduct.x4;
-    return auxDeduct;
+
+//Som - incompleto
+
+function showSom(){
+
+    $('.container').append($('<br>'));
+    $('.container').append($('<hr>').addClass('hrStyle'));
+
+    let lloydDiv = $('<div>').addClass('centroidDiv');
+    lloydDiv.append($('<h1>').text('SOM'));
+    lloydDiv.append($('<br>'));
+    lloydDiv.append($('<h1>').attr('id','centroid1SOM'));
+    lloydDiv.append($('<h1>').attr('id','centroid2SOM'));
+    
+    $('.container').append(lloydDiv);
+
+    let div = $('<div>');
+
+    let div2 =  $('<div>').addClass('form-group row');
+    let input = $('<input>').attr('id','sampleSOM').addClass('offset-md-2 text-center col-md-8 form-control');
+    input.attr('placeholder','Introduce la muestra separada por comas "\,\" Ej: 5.1,3.5,1.4,0.2');
+    div2.append(input);
+    let divB = $('<div>').addClass('col-md-12 text-center')
+    let button = $('<button>').attr('type','submit').addClass('btn btn-primary').text('Decide').attr('id','solveBtn');
+    button.attr('onClick','solveSOM()');
+
+    let div3 =  $('<div>').addClass('col-md-12 text-center').attr('id','divSol');
+    let lbl = $('<label>').text('Resultado').addClass('col-md-2').attr('id','lblSol');
+    let sol = $('<input>').attr('id','solSOM').addClass('col-md-4 btn btn-default');
+    sol.attr('placeholder','Aqui se mostrará la solución');
+    sol.prop('readonly', true);
+
+    divB.append(button);
+    div2.append(divB);
+    div3.append(lbl);
+    div3.append(sol);
+    
+    div2.append(div3);
+    div.append(div2);
+    
+    $('.container').append(div);
+
 };
 
-function sum(vector, auxDeduct){
-    vector.x1 += auxDeduct.x1;
-    vector.x2 += auxDeduct.x2;
-    vector.x3 += auxDeduct.x3;
-    vector.x4 += auxDeduct.x4;
-    return vector;
+function updateSom(k,sample){
+    let v1 = centroidMatrixSOM[1];
+    let v2 = centroidMatrixSOM[2];
+    let actualC1 = math.matrix([[v1[0]],[v1[1]],[v1[2]],[v1[3]]]);
+    let actualC2 = math.matrix([[v2[0]],[v2[1]],[v2[2]],[v2[3]]]);
+    let alfaK = alfaStart * (Math.pow((altfaEnd/alfaStart),k/kMaxSom));
+
+    //c1
+    let d1 = calculateDSom(1,sample);
+    let denominator = 2 * Math.pow(alfaK,2);
+    let divide = -d1/denominator;
+    let kalfak = Math.exp(divide);
+
+    //c2
+    let d2 = calculateDSom(2,sample);
+    let divide2 = -d2/denominator;
+    let kalfak2 = Math.exp(divide2);
+
+    if(kalfak > T){//se actualiza c1
+        let xisubc1 = math.subtract(sample,actualC1);
+        xisubc1 = math.multiply((1/(10+k)*kalfak),xisubc1);
+        let c1 = math.add(actualC1,xisubc1);
+        centroidMatrixSOM[1] = [c1.get([0,0]),c1.get([1,0]),c1.get([2,0]),c1.get([3,0])];
+    }
+    if (kalfak2 > T){//se actualiza c2
+        let xisubc2 = math.subtract(sample,actualC2);
+        xisubc2 = math.multiply((1/(10+k)*kalfak2),xisubc2);
+        let c2 = math.add(actualC2,xisubc2);
+        centroidMatrixSOM[2] = [c2.get([0,0]),c2.get([1,0]),c2.get([2,0]),c2.get([3,0])];
+    }
+    if(kalfak < T && kalfak2 < T){
+        let xisubc1 = math.subtract(sample,actualC1);
+        xisubc1 = math.multiply((1/(10+k)*kalfak),xisubc1);
+        let c1 = math.add(actualC1,xisubc1);
+        centroidMatrixSOM[1] = [c1.get([0,0]),c1.get([1,0]),c1.get([2,0]),c1.get([3,0])];
+
+        let xisubc2 = math.subtract(sample,actualC2);
+        xisubc2 = math.multiply((1/(10+k)*kalfak2),xisubc2);
+        let c2 = math.add(actualC2,xisubc2);
+        centroidMatrixSOM[2] = [c2.get([0,0]),c2.get([1,0]),c2.get([2,0]),c2.get([3,0])];
+    }
+};
+
+function som(){
+    let stop = false;
+    let it = 1;
+    
+    while(!stop && it <= kMaxSom){
+        teachSOM(it);
+        let v1euc = math.subtract(centroidMatrixSOM[1],OldCentroidMatrixSOM[1]);
+        let v2euc =  math.subtract(centroidMatrixSOM[2],OldCentroidMatrixSOM[2]);
+
+        if( v1euc < epsilonSOM && v2euc < epsilonSOM)
+            stop = true;
+        OldCentroidMatrixSOM = centroidMatrixSOM.slice(); //Array CLONE!!! Easy
+        it++;
+    }
+    console.log(it);
+    console.log(centroidMatrixSOM[1]);
+    console.log(centroidMatrixSOM[2]);
+}
+
+function teachSOM(k){
+    for(let i = 1; i < data.length; i++){
+        const sample = data[i];
+        let newSample = math.matrix([[Number(sample.x1)],[Number(sample.x2)],[Number(sample.x3)],[Number(sample.x4)]]);
+        updateSom(k,newSample);
+    }
 }
